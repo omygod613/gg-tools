@@ -2,7 +2,7 @@
 
 BASE_DIR=$(dirname "$0")
 
-if [ ! -z $1 ] || [ ! -z $2 ] || [ ! -z $3 ] 
+if [ ! -z $1 ] && [ ! -z $2 ] && [ ! -z $3 ] 
 then 
     kubectl create secret docker-registry regcred --docker-server=container-registry.oracle.com --docker-username=$1 --docker-password=$2 --docker-email=$3
 else

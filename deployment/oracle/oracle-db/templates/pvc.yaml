@@ -11,7 +11,7 @@ metadata:
 {{- include "oracle-db-labels" . | indent 2 }}
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
       storage: {{ .Values.persistence.size | quote }}
