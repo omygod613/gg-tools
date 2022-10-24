@@ -2,7 +2,12 @@
 
 BASE_DIR=$(dirname "$0")
 
-helm repo add oracle https://oracle.github.io/helm-charts
-helm install isliao-oracle oracle/<chart_name> \
-  --set <parameters>...
-helm install isliao-debezium $BASE_DIR/debezium
+if [ ! -z $1 ] || [ ! -z $2 ] || [ ! -z $3 ] 
+then 
+    kubectl create secret docker-registry regcred --docker-server=container-registry.oracle.com --docker-username=$1 --docker-password=$2 --docker-email=$3
+else
+    echo "docker-username, dokcer-password, docker-email are required."
+fi
+
+# helm repo add oracle https://oracle.github.io/helm-charts
+helm install isliao-oracle $BASE_DIR/oracle-db

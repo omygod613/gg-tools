@@ -1,1 +1,3 @@
-helm uninstall isliao-debezium
+#!/bin/bash
+
+helm uninstall isliao-oracle
