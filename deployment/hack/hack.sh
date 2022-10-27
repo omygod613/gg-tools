@@ -1,6 +1,6 @@
 kubectl get secret --namespace devns3 isliao-mysql -o jsonpath="{.data.mysql-root-password}" | base64 -d
 kubectl exec -it isliao-mysql-0 -- bash
-mysql -h isliao-mysql.devns3.svc.cluster.local -uroot -p
+mysql -h isliao-mysql.devns3.svc.cluster.local -uroot -proot_password
 
 
 # MySQL
@@ -49,14 +49,16 @@ kubectl exec -it isliao-kafka-connect-cp-kafka-connect-7584f4d49d-lrkph -c cp-ka
 
 kubectl port-forward svc/isliao-kafka-connect-cp-kafka-connect 8083:8083
 
-http://127.0.0.1:8083/connector-plugins
+http://localhost:8083/connector-plugins
 http://localhost:8083/connectors
+
+
 
 
 curl -X POST -H 'Content-Type: application/json' -i 'http://127.0.0.1:8083/connectors' \
 --data \
 '{
-    "name": "source-mysql", 
+    "name": "source-mysql-connector", 
     "config": {
         "connector.class": "io.debezium.connector.mysql.MySqlConnector",
         "tasks.max": "1",
@@ -68,19 +70,85 @@ curl -X POST -H 'Content-Type: application/json' -i 'http://127.0.0.1:8083/conne
         "database.server.name": "source", 
         "database.include.list": "source_database", 
         "database.history.kafka.bootstrap.servers": "isliao-kafka.devns3.svc.cluster.local:9092", 
-        "database.history.kafka.topic": "schema-changes.source_database"
+        "database.history.kafka.topic": "schema-changes.source_database",
+        "include.schema.changes": "false"
     }
 }'
 
-curl -X DELETE  -i 'http://127.0.0.1:8083/connectors/source-mysql' 
+curl http://localhost:8083/connectors/source-mysql-connector/status
+curl -X DELETE  -i 'http://127.0.0.1:8083/connectors/source-mysql-connector' 
 
 
-INSERT INTO source_users(`username`, `nickname`) VALUES('小熊維尼', 'polar bear');
-INSERT INTO source_users(`username`, `nickname`) VALUES('大谷翔平', '笑死');
-INSERT INTO source_users(`username`, `nickname`) VALUES('鄧不利多', '校長');
+use source_database;
+INSERT INTO source_users(`username`, `nickname`) VALUES('pppp', 'polar bear');
+INSERT INTO source_users(`username`, `nickname`) VALUES('llll', 'laugh');
+INSERT INTO source_users(`username`, `nickname`) VALUES('dddd', 'dandan');
 INSERT INTO source_users(`username`, `nickname`) VALUES('ooooo', 'xxxxx');
 
 
 
 kafka-topics.sh --bootstrap-server=localhost:9092 --list
 kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test-mysql-source_users --from-beginning
+
+kubectl exec -it isliao-mariadb-0 bash
+
+
+http://localhost:8083/connector-plugins
+http://localhost:8083/connectors
+http://localhost:8083/connectors/source-mysql-connector/status
+
+http://localhost:8083/connectors
+{
+    "name": "source-mysql-connector", 
+    "config": {
+        "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+        "tasks.max": "1",
+        "database.hostname": "isliao-mysql.devns3.svc.cluster.local", 
+        "database.port": "3306", 
+        "database.user": "root", 
+        "database.password": "root_password", 
+        "database.server.id": "1", 
+        "database.server.name": "source", 
+        "database.include.list": "source_database", 
+        "database.history.kafka.bootstrap.servers": "isliao-kafka.devns3.svc.cluster.local:9092", 
+        "database.history.kafka.topic": "schema-changes.source_database",
+        "include.schema.changes": "false"
+    }
+}
+
+http://127.0.0.1:8083/connectors/source-mysql-connector
+
+
+http://localhost:8083/connectors/target-mariadb-connector/status
+http://localhost:8083/connectors
+{
+    "name": "target-mariadb-connector",
+    "config": {
+        "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+        "connection.url": "jdbc:mariadb://isliao-mariadb.devns3.svc.cluster.local:3306/target_database",
+        "connection.user": "root",
+        "connection.password": "root_password",
+        "topics": "source.source_database.source_users",
+        "auto.create": "false",
+        "insert.mode": "upsert",
+        "pk.mode": "record_value",
+        "pk.fields": "id",
+        "table.name.format": "target_users"
+    }
+}
+{
+    "name": "target-mariadb-connector",
+    "config": {
+        "connector.class": "org.apache.camel.kafkaconnector.mariadbsink.CamelMariadbsinkSinkConnector",
+        "connection.url": "jdbc:mariadb://isliao-mariadb.devns3.svc.cluster.local:3306/target_database",
+        "connection.user": "root",
+        "connection.password": "root_password",
+        "topics": "source.source_database.source_users",
+        "auto.create": "false",
+        "insert.mode": "upsert",
+        "pk.mode": "record_value",
+        "pk.fields": "id",
+        "table.name.format": "target_users"
+    }
+}
+http://127.0.0.1:8083/connectors/target-mariadb-connector
