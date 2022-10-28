@@ -5,7 +5,6 @@ mysql -h isliao-mysql.devns3.svc.cluster.local -uroot -proot_password
 
 # MySQL
 create database `source_database` default character set utf8mb4 collate utf8mb4_unicode_ci;
-create database `target_database` default character set utf8mb4 collate utf8mb4_unicode_ci;
 
 use source_database;
 
@@ -16,6 +15,15 @@ CREATE TABLE `source_users` (
 PRIMARY KEY (`id`) 
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+use source_database;
+INSERT INTO source_users(`username`, `nickname`) VALUES('pppp', 'polar bear');
+INSERT INTO source_users(`username`, `nickname`) VALUES('llll', 'laugh');
+INSERT INTO source_users(`username`, `nickname`) VALUES('dddd', 'dandan');
+INSERT INTO source_users(`username`, `nickname`) VALUES('ooooo', 'xxxxx');
+
+# Sink DB must create database before create DB connector
+create database `target_database` default character set utf8mb4 collate utf8mb4_unicode_ci;
+
 use target_database;
 
 CREATE TABLE `target_users` (
@@ -24,20 +32,6 @@ CREATE TABLE `target_users` (
   `nickname` VARCHAR(20) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-# Kafka Connect
-# wget https://d1i4a15mxbxib1.cloudfront.net/api/plugins/confluentinc/kafka-connect-jdbc/versions/10.2.1/confluentinc-kafka-connect-jdbc-10.2.1.zip
-# unzip confluentinc-kafka-connect-jdbc-10.2.1.zip
-# kubectl cp confluentinc-kafka-connect-jdbc-10.2.1 devns3/isliao-kafka-connect-cp-kafka-connect-7584f4d49d-lrkph:/home/appuser -c cp-kafka-connect-server 
-# mkdir -p kafkaConnect/lib
-# mv confluentinc-kafka-connect-jdbc-10.2.1 kafkaConnect/
-# mv mysql-connector-java-8.0.20.jar kafkaConnect/lib/
-
-# kubectl exec -it isliao-kafka-connect-cp-kafka-connect-7584f4d49d-lrkph -c cp-kafka-connect-server -- bash
-# wget https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.20/mysql-connector-java-8.0.20.jar
-
-# mv confluentinc-kafka-connect-jdbc-10.2.1 /usr/share/confluent-hub-components
-# mv mysql-connector-java-8.0.20.jar /usr/share/java
 
 
 kubectl exec -it isliao-kafka-connect-cp-kafka-connect-7584f4d49d-lrkph -c cp-kafka-connect-server -- bash
@@ -79,11 +73,7 @@ curl http://localhost:8083/connectors/source-mysql-connector/status
 curl -X DELETE  -i 'http://127.0.0.1:8083/connectors/source-mysql-connector' 
 
 
-use source_database;
-INSERT INTO source_users(`username`, `nickname`) VALUES('pppp', 'polar bear');
-INSERT INTO source_users(`username`, `nickname`) VALUES('llll', 'laugh');
-INSERT INTO source_users(`username`, `nickname`) VALUES('dddd', 'dandan');
-INSERT INTO source_users(`username`, `nickname`) VALUES('ooooo', 'xxxxx');
+
 
 
 
@@ -91,7 +81,7 @@ kafka-topics.sh --bootstrap-server=localhost:9092 --list
 kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test-mysql-source_users --from-beginning
 
 kubectl exec -it isliao-mariadb-0 bash
-
+mysql -h isliao-mariadb.devns3.svc.cluster.local -uroot -proot_password
 
 http://localhost:8083/connector-plugins
 http://localhost:8083/connectors
@@ -112,7 +102,7 @@ http://localhost:8083/connectors
         "database.include.list": "source_database", 
         "database.history.kafka.bootstrap.servers": "isliao-kafka.devns3.svc.cluster.local:9092", 
         "database.history.kafka.topic": "schema-changes.source_database",
-        "include.schema.changes": "false"
+        "include.schema.changes": "true"
     }
 }
 
@@ -125,30 +115,68 @@ http://localhost:8083/connectors
     "name": "target-mariadb-connector",
     "config": {
         "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
-        "connection.url": "jdbc:mariadb://isliao-mariadb.devns3.svc.cluster.local:3306/target_database",
+        "tasks.max": 1,
+        "connection.url": "jdbc:mysql://isliao-mariadb.devns3.svc.cluster.local:3306/target_database",
+        "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+        "value.converter.schema.registry.url": "http://isliao-schema-registry-cp-schema-registry.devns3.svc.cluster.local:8081",
+        "value.converter": "io.confluent.connect.avro.AvroConverter",
+        "key.converter.schemas.enable": "true",
+        "value.converter.schemas.enable": "true",
+        "config.action.reload": "restart",
+        "errors.log.enable": "true",
+        "errors.log.include.messages": "true",
         "connection.user": "root",
         "connection.password": "root_password",
         "topics": "source.source_database.source_users",
-        "auto.create": "false",
+        "auto.create": "true",
         "insert.mode": "upsert",
         "pk.mode": "record_value",
         "pk.fields": "id",
         "table.name.format": "target_users"
     }
 }
+
+
 {
     "name": "target-mariadb-connector",
     "config": {
-        "connector.class": "org.apache.camel.kafkaconnector.mariadbsink.CamelMariadbsinkSinkConnector",
+        "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+        "tasks.max": 1,
         "connection.url": "jdbc:mariadb://isliao-mariadb.devns3.svc.cluster.local:3306/target_database",
+        "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+        "value.converter.schema.registry.url": "http://isliao-schema-registry-cp-schema-registry.devns3.svc.cluster.local:8081",
+        "value.converter": "io.confluent.connect.avro.AvroConverter",
+        "key.converter.schemas.enable": "true",
+        "value.converter.schemas.enable": "true",
+        "config.action.reload": "restart",
+        "errors.log.enable": "true",
+        "errors.log.include.messages": "true",
         "connection.user": "root",
         "connection.password": "root_password",
         "topics": "source.source_database.source_users",
-        "auto.create": "false",
+        "auto.create": "true",
         "insert.mode": "upsert",
         "pk.mode": "record_value",
         "pk.fields": "id",
         "table.name.format": "target_users"
     }
 }
+
+{
+    "name": "target-mariadb-connector",
+    "config": {
+        "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+        "tasks.max": 1,
+        "connection.url": "jdbc:mariadb://isliao-mariadb.devns3.svc.cluster.local:3306/target_database",
+        "connection.user": "root",
+        "connection.password": "root_password",
+        "topics": "source.source_database.source_users",
+        "auto.create": "true",
+        "insert.mode": "upsert",
+        "pk.mode": "record_value",
+        "pk.fields": "id",
+        "table.name.format": "target_users"
+    }
+}
+
 http://127.0.0.1:8083/connectors/target-mariadb-connector
