@@ -1,9 +1,9 @@
-kubectl get secret --namespace devns3 isliao-mysql -o jsonpath="{.data.mysql-root-password}" | base64 -d
-kubectl exec -it isliao-mysql-0 -- bash
-mysql -h isliao-mysql.devns3.svc.cluster.local -uroot -proot_password
 
 
 # MySQL
+kubectl exec -it isliao-mysql-0 -- bash
+mysql -h isliao-mysql.devns3.svc.cluster.local -uroot -proot_password
+
 create database `source_database` default character set utf8mb4 collate utf8mb4_unicode_ci;
 
 use source_database;
@@ -20,6 +20,11 @@ INSERT INTO source_users(`username`, `nickname`) VALUES('pppp', 'polar bear');
 INSERT INTO source_users(`username`, `nickname`) VALUES('llll', 'laugh');
 INSERT INTO source_users(`username`, `nickname`) VALUES('dddd', 'dandan');
 INSERT INTO source_users(`username`, `nickname`) VALUES('ooooo', 'xxxxx');
+
+
+# MariaDB
+kubectl exec -it isliao-mariadb-0 bash
+mysql -h isliao-mariadb.devns3.svc.cluster.local -uroot -proot_password
 
 # Sink DB must create database before create DB connector
 create database `target_database` default character set utf8mb4 collate utf8mb4_unicode_ci;
@@ -41,47 +46,11 @@ kubectl exec -it isliao-kafka-connect-cp-kafka-connect-7584f4d49d-lrkph -c cp-ka
 # confluent-hub install confluentinc/kafka-connect-oracle-cdc:2.2.2
 # connect-distributed /etc/kafka-connect/kafka-connect.properties
 
-kubectl port-forward svc/isliao-kafka-connect-cp-kafka-connect 8083:8083
-
-http://localhost:8083/connector-plugins
-http://localhost:8083/connectors
-
-
-
-
-curl -X POST -H 'Content-Type: application/json' -i 'http://127.0.0.1:8083/connectors' \
---data \
-'{
-    "name": "source-mysql-connector", 
-    "config": {
-        "connector.class": "io.debezium.connector.mysql.MySqlConnector",
-        "tasks.max": "1",
-        "database.hostname": "isliao-mysql.devns3.svc.cluster.local", 
-        "database.port": "3306", 
-        "database.user": "root", 
-        "database.password": "root_password", 
-        "database.server.id": "1", 
-        "database.server.name": "source", 
-        "database.include.list": "source_database", 
-        "database.history.kafka.bootstrap.servers": "isliao-kafka.devns3.svc.cluster.local:9092", 
-        "database.history.kafka.topic": "schema-changes.source_database",
-        "include.schema.changes": "false"
-    }
-}'
-
-curl http://localhost:8083/connectors/source-mysql-connector/status
-curl -X DELETE  -i 'http://127.0.0.1:8083/connectors/source-mysql-connector' 
-
-
-
-
-
 
 kafka-topics.sh --bootstrap-server=localhost:9092 --list
 kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test-mysql-source_users --from-beginning
 
-kubectl exec -it isliao-mariadb-0 bash
-mysql -h isliao-mariadb.devns3.svc.cluster.local -uroot -proot_password
+
 
 http://localhost:8083/connector-plugins
 http://localhost:8083/connectors
