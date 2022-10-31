@@ -24,10 +24,12 @@ servicePort: 8083
 
 ## Kafka Connect properties
 ## ref: https://docs.confluent.io/current/connect/userguide.html#configuring-workers
+# io.confluent.connect.avro.AvroConverter
+# org.apache.kafka.connect.json.JsonConverter
 configurationOverrides:
   "plugin.path": "/usr/share/java,/usr/share/confluent-hub-components"
-  "key.converter": "io.confluent.connect.avro.AvroConverter"
-  "value.converter": "io.confluent.connect.avro.AvroConverter"
+  "key.converter": "org.apache.kafka.connect.json.JsonConverter"
+  "value.converter": "org.apache.kafka.connect.json.JsonConverter"
   "value.converter.schema.registry.url": "isliao-schema-registry-cp-schema-registry.devns3.svc.cluster.local:8081"
   "key.converter.schemas.enable": "true"
   "value.converter.schemas.enable": "true"
@@ -102,7 +104,7 @@ kafka:
 ## If the Kafka Chart is disabled a URL and port are required to connect
 ## e.g. gnoble-panther-cp-schema-registry:8081
 cp-schema-registry:
-  url: ""
+  url: "isliao-schema-registry-cp-schema-registry.devns3.svc.cluster.local:8081"
 
 ## List of volumeMounts for connect server container
 ## ref: https://kubernetes.io/docs/concepts/storage/volumes/

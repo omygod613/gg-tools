@@ -71,7 +71,7 @@ http://localhost:8083/connectors
         "database.include.list": "source_database", 
         "database.history.kafka.bootstrap.servers": "isliao-kafka.devns3.svc.cluster.local:9092", 
         "database.history.kafka.topic": "schema-changes.source_database",
-        "include.schema.changes": "true"
+        "include.schema.changes": "false"
     }
 }
 
@@ -85,10 +85,10 @@ http://localhost:8083/connectors
     "config": {
         "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
         "tasks.max": 1,
-        "connection.url": "jdbc:mysql://isliao-mariadb.devns3.svc.cluster.local:3306/target_database",
-        "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+        "connection.url": "jdbc:mariadb://isliao-mariadb.devns3.svc.cluster.local:3306/target_database",
+        "key.converter": "org.apache.kafka.connect.json.JsonConverter",
         "value.converter.schema.registry.url": "http://isliao-schema-registry-cp-schema-registry.devns3.svc.cluster.local:8081",
-        "value.converter": "io.confluent.connect.avro.AvroConverter",
+        "value.converter": "org.apache.kafka.connect.json.JsonConverter",
         "key.converter.schemas.enable": "true",
         "value.converter.schemas.enable": "true",
         "config.action.reload": "restart",

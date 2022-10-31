@@ -91,8 +91,8 @@ diagnosticMode:
 ##
 image:
   registry: docker.io
-  repository: bitnami/spark
-  tag: 3.3.0-debian-11-r37
+  repository: omygod613/spark
+  tag: 3.3.0-debian-11-r30-gg
   digest: ""
   ## Specify a imagePullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
