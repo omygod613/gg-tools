@@ -28,16 +28,16 @@ servicePort: 8083
 # org.apache.kafka.connect.json.JsonConverter
 configurationOverrides:
   "plugin.path": "/usr/share/java,/usr/share/confluent-hub-components"
-  "key.converter": "org.apache.kafka.connect.json.JsonConverter"
-  "value.converter": "org.apache.kafka.connect.json.JsonConverter"
+  "key.converter": "org.apache.kafka.connect.storage.StringConverter"
+  "value.converter": "org.apache.kafka.connect.storage.StringConverter"
   "value.converter.schema.registry.url": "isliao-schema-registry-cp-schema-registry.devns3.svc.cluster.local:8081"
-  "key.converter.schemas.enable": "true"
-  "value.converter.schemas.enable": "true"
-  "internal.key.converter": "org.apache.kafka.connect.json.JsonConverter"
-  "internal.value.converter": "org.apache.kafka.connect.json.JsonConverter"
-  "config.storage.replication.factor": "1"
-  "offset.storage.replication.factor": "1"
-  "status.storage.replication.factor": "1"
+  "key.converter.schemas.enable": "false"
+  "value.converter.schemas.enable": "false"
+  # "internal.key.converter": "org.apache.kafka.connect.json.JsonConverter"
+  # "internal.value.converter": "org.apache.kafka.connect.json.JsonConverter"
+  # "config.storage.replication.factor": "1"
+  # "offset.storage.replication.factor": "1"
+  # "status.storage.replication.factor": "1"
 
 ## Kafka Connect JVM Heap Option
 heapOptions: "-Xms512M -Xmx512M"

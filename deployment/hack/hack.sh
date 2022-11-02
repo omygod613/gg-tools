@@ -15,7 +15,6 @@ CREATE TABLE `source_users` (
 PRIMARY KEY (`id`) 
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-use source_database;
 INSERT INTO source_users(`username`, `nickname`) VALUES('pppp', 'polar bear');
 INSERT INTO source_users(`username`, `nickname`) VALUES('llll', 'laugh');
 INSERT INTO source_users(`username`, `nickname`) VALUES('dddd', 'dandan');
@@ -75,6 +74,31 @@ http://localhost:8083/connectors
     }
 }
 
+{
+    "name": "source-mysql-connector", 
+    "config": {
+        "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+        "tasks.max": "1",
+        "database.hostname": "isliao-mysql.devns3.svc.cluster.local", 
+        "database.port": "3306", 
+        "database.user": "root", 
+        "database.password": "root_password", 
+        "database.server.id": "1", 
+        "database.server.name": "source", 
+        "database.history.kafka.bootstrap.servers": "isliao-kafka.devns3.svc.cluster.local:9092", 
+        "database.history.kafka.topic": "schema-changes.source_database",
+        "database.include.list": "source_database", 
+        "transforms": "unwrap",
+        "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+        "transforms.unwrap.add.fields": "id",
+        "transforms.unwrap.drop.tombstones": "false",
+        "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+        "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+        "key.converter.schemas.enable": "false",
+        "value.converter.schemas.enable": "false"
+    }
+}
+
 http://127.0.0.1:8083/connectors/source-mysql-connector
 
 
@@ -85,23 +109,18 @@ http://localhost:8083/connectors
     "config": {
         "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
         "tasks.max": 1,
-        "connection.url": "jdbc:mariadb://isliao-mariadb.devns3.svc.cluster.local:3306/target_database",
-        "key.converter": "org.apache.kafka.connect.json.JsonConverter",
-        "value.converter.schema.registry.url": "http://isliao-schema-registry-cp-schema-registry.devns3.svc.cluster.local:8081",
-        "value.converter": "org.apache.kafka.connect.json.JsonConverter",
-        "key.converter.schemas.enable": "true",
-        "value.converter.schemas.enable": "true",
-        "config.action.reload": "restart",
-        "errors.log.enable": "true",
-        "errors.log.include.messages": "true",
+        "connection.url": "jdbc:mysql://isliao-mariadb.devns3.svc.cluster.local:3306/target_database",
         "connection.user": "root",
         "connection.password": "root_password",
         "topics": "source.source_database.source_users",
-        "auto.create": "true",
+        "auto.create": "false",
+        "autoevolve": "false",
+        "insert.mode.databaselevel": "true",
         "insert.mode": "upsert",
-        "pk.mode": "record_value",
+        "pk.mode": "record_key",
         "pk.fields": "id",
-        "table.name.format": "target_users"
+        "table.name.format": "target_users",
+        "delete.enabled": "true",
     }
 }
 
@@ -148,4 +167,30 @@ http://localhost:8083/connectors
     }
 }
 
+{
+    "name": "target-mariadb-connector",
+    "config": {
+        "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+        "tasks.max": 1,
+        "connection.url": "jdbc:mariadb://isliao-mariadb.devns3.svc.cluster.local:3306/target_database",
+        "key.converter.schema.registry.url": "http://isliao-schema-registry-cp-schema-registry.devns3.svc.cluster.local:8081",
+        "value.converter.schema.registry.url": "http://isliao-schema-registry-cp-schema-registry.devns3.svc.cluster.local:8081",
+        "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+        "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+        "key.converter.schemas.enable": "false",
+        "value.converter.schemas.enable": "false",
+        "config.action.reload": "restart",
+        "errors.log.enable": "true",
+        "errors.log.include.messages": "true",
+        "connection.user": "root",
+        "connection.password": "root_password",
+        "topics": "source.source_database.source_users",
+        "auto.create": "true",
+        "insert.mode": "upsert",
+        "pk.mode": "record_value",
+        "pk.fields": "id",
+        "table.name.format": "target_users",
+        "insert.mode.databaselevel": "true"
+    }
+}
 http://127.0.0.1:8083/connectors/target-mariadb-connector
