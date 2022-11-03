@@ -67,6 +67,31 @@ http://localhost:8083/connectors
         "database.password": "root_password", 
         "database.server.id": "1", 
         "database.server.name": "source", 
+        "database.history.kafka.bootstrap.servers": "isliao-kafka.devns3.svc.cluster.local:9092", 
+        "database.history.kafka.topic": "schema-changes.source_database",
+        "database.include.list": "source_database", 
+        "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+        "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+        "key.converter.schemas.enable": "true",
+        "value.converter.schemas.enable": "true",
+        "transforms": "unwrap",
+        "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+        "transforms.unwrap.drop.tombstones": "false"
+    }
+}
+
+
+{
+    "name": "source-mysql-connector", 
+    "config": {
+        "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+        "tasks.max": "1",
+        "database.hostname": "isliao-mysql.devns3.svc.cluster.local", 
+        "database.port": "3306", 
+        "database.user": "root", 
+        "database.password": "root_password", 
+        "database.server.id": "1", 
+        "database.server.name": "source", 
         "database.include.list": "source_database", 
         "database.history.kafka.bootstrap.servers": "isliao-kafka.devns3.svc.cluster.local:9092", 
         "database.history.kafka.topic": "schema-changes.source_database",
@@ -87,10 +112,10 @@ http://localhost:8083/connectors
         "database.server.name": "source", 
         "database.history.kafka.bootstrap.servers": "isliao-kafka.devns3.svc.cluster.local:9092", 
         "database.history.kafka.topic": "schema-changes.source_database",
+        
         "database.include.list": "source_database", 
         "transforms": "unwrap",
         "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
-        "transforms.unwrap.add.fields": "id",
         "transforms.unwrap.drop.tombstones": "false",
         "key.converter": "org.apache.kafka.connect.json.JsonConverter",
         "value.converter": "org.apache.kafka.connect.json.JsonConverter",
@@ -104,6 +129,30 @@ http://127.0.0.1:8083/connectors/source-mysql-connector
 
 http://localhost:8083/connectors/target-mariadb-connector/status
 http://localhost:8083/connectors
+{
+    "name": "target-mariadb-connector",
+    "config": {
+        "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+        "tasks.max": 1,
+        "connection.url": "jdbc:mariadb://isliao-mariadb.devns3.svc.cluster.local:3306/target_database",
+        "connection.user": "root",
+        "connection.password": "root_password",
+        "topics": "source.source_database.source_users",
+        "table.name.format": "target_users",
+        "auto.create": "false",
+        "autoevolve": "false",
+        "insert.mode": "upsert",
+        "delete.enabled": "true",
+        "pk.fields": "id",
+        "pk.mode": "record_key",
+        "value.converter.schema.registry.url": "http://isliao-schema-registry-cp-schema-registry.devns3.svc.cluster.local:8081",
+        "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+        "value.converter.schemas.enable": "true",
+        "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+        "key.converter.schemas.enable": "true"
+    }
+}
+
 {
     "name": "target-mariadb-connector",
     "config": {
