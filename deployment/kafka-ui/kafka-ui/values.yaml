@@ -5,7 +5,7 @@ image:
   repository: provectuslabs/kafka-ui
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "c4bbbbe3da06779907a57b05354bcfcb9919ce81"
 
 imagePullSecrets: []
 nameOverride: ""
