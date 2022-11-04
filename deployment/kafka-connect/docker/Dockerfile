@@ -1,8 +1,6 @@
-FROM confluentinc/cp-kafka-connect:6.1.0
+FROM confluentinc/cp-kafka-connect:6.1.8
 
 USER root
-
-RUN yum install zip -y
 
 ENV CONNECT_PLUGIN_PATH="/usr/share/java,/usr/share/confluent-hub-components"
 RUN confluent-hub install --no-prompt debezium/debezium-connector-mysql:1.9.6
