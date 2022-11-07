@@ -1,0 +1,8 @@
+apiVersion: v1
+description: Oracle Database Server
+home: http://www.oracle.com
+keywords:
+- oracle
+- database
+name: oracle-db
+version: 1.0.0
