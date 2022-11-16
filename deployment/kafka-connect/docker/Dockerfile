@@ -11,7 +11,7 @@ RUN confluent-hub install --no-prompt confluentinc/kafka-connect-oracle-cdc:2.2.
 RUN wget https://repo1.maven.org/maven2/io/debezium/debezium-connector-oracle/2.0.0.Final/debezium-connector-oracle-2.0.0.Final-plugin.tar.gz
 RUN tar zxvf debezium-connector-oracle-2.0.0.Final-plugin.tar.gz
 RUN mv debezium-connector-oracle /usr/share/java
-
+RUN cp /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib/ojdbc8-19.7.0.0.jar /usr/share/java/debezium-connector-oracle/
 
 # Must put the mariadb jar into jdbc folder
 RUN wget https://dlm.mariadb.com/2531428/Connectors/java/connector-java-3.0.8/mariadb-java-client-3.0.8.jar
