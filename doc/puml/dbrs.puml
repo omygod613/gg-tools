@@ -1,0 +1,29 @@
+@startuml
+group init_snapshot : If fail at any step, restart this process
+Oracle <- Debezium : ROW SHARE MODE LOCK
+Oracle -> Debezium : Read Current SCN
+Oracle -> Debezium : Capture the structure of all tables
+Oracle <- Debezium : Release LOCK
+Oracle -> Debezium : SELECT * FROM  ... AS OF SCN <Current SCN>
+Debezium -> Kafka : Generate READ event for each row, then write to Kafka Topic 
+Debezium <- Kafka : Return Ack
+Debezium -> Kafka : Record Connector Offset
+end
+
+loop
+Oracle -> Debezium : Stream from current SCN
+Debezium -> Kafka : Generate READ event for each row, then write to Kafka Topic 
+Debezium <- Kafka : Return Ack
+Oracle <- Debezium : Update SCN to LOG_MINING_FLUSH table
+Debezium -> Kafka : Record Connector Offset
+end
+note over Oracle, Kafka : Debezium Guarantees At Least Once delivery
+
+loop
+Kafka -> Sink_Connector : Consume Changes based on Offset
+Sink_Connector -> MariaDB : Upsert all Changes
+Sink_Connector <- MariaDB : Return
+Kafka <- Sink_Connector : Update Offset
+end
+hnote across : Exactly once delivery
+@enduml
