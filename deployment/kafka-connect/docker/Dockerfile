@@ -16,3 +16,9 @@ RUN cp /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib/o
 # Must put the mariadb jar into jdbc folder
 RUN wget https://dlm.mariadb.com/2531428/Connectors/java/connector-java-3.0.8/mariadb-java-client-3.0.8.jar
 RUN mv mariadb-java-client-3.0.8.jar /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib
+
+# Install JMX agent
+RUN mkdir /opt/jmx
+COPY jmx_prometheus_javaagent.jar /opt/jmx/jmx_prometheus_javaagent.jar
+COPY config.yml /opt/jmx/config.yml
+COPY connect-distributed /usr/bin/connect-distributed
