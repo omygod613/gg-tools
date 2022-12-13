@@ -19,6 +19,9 @@ RUN mv mariadb-java-client-3.0.8.jar /usr/share/confluent-hub-components/conflue
 
 # Install JMX agent
 RUN mkdir /opt/jmx
+# curl -so jmx_prometheus_javaagent.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.15.0/jmx_prometheus_javaagent-0.15.0.jar
+# ref: https://github.com/debezium/debezium-examples/blob/main/monitoring/debezium-jmx-exporter/Dockerfile
+# https://thedataguy.in/monitor-debezium-mysql-connector-with-prometheus-and-grafana/
 COPY jmx_prometheus_javaagent.jar /opt/jmx/jmx_prometheus_javaagent.jar
 COPY config.yml /opt/jmx/config.yml
 COPY connect-distributed /usr/bin/connect-distributed
