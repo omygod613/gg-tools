@@ -7,4 +7,4 @@ bash deployment/kafka-connect/install.sh
 bash deployment/kafka/install.sh
 bash deployment/kafka-ui/install.sh
 bash deployment/mariadb/install.sh
-bash deployment/schema-registry/install.sh
+# bash deployment/schema-registry/install.sh
