@@ -8,8 +8,8 @@ RUN confluent-hub install --no-prompt confluentinc/kafka-connect-jdbc:10.6.0
 RUN confluent-hub install --no-prompt confluentinc/kafka-connect-oracle-cdc:2.2.2
 
 # Install debezium for Oracle 
-RUN wget https://repo1.maven.org/maven2/io/debezium/debezium-connector-oracle/2.0.0.Final/debezium-connector-oracle-2.0.0.Final-plugin.tar.gz
-RUN tar zxvf debezium-connector-oracle-2.0.0.Final-plugin.tar.gz
+RUN wget https://repo1.maven.org/maven2/io/debezium/debezium-connector-oracle/2.1.1.Final/debezium-connector-oracle-2.1.1.Final-plugin.tar.gz
+RUN tar zxvf debezium-connector-oracle-2.1.1.Final-plugin.tar.gz
 RUN mv debezium-connector-oracle /usr/share/java
 RUN cp /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib/ojdbc8-19.7.0.0.jar /usr/share/java/debezium-connector-oracle/
 
