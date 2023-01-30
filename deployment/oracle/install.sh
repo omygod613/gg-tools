@@ -11,3 +11,4 @@ else
 fi
 
 # helm repo add oracle https://oracle.github.io/helm-charts
+# docker login container-registry.oracle.com

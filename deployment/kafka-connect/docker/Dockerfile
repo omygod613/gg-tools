@@ -5,7 +5,6 @@ USER root
 ENV CONNECT_PLUGIN_PATH="/usr/share/java,/usr/share/confluent-hub-components"
 RUN confluent-hub install --no-prompt debezium/debezium-connector-mysql:1.9.6
 RUN confluent-hub install --no-prompt confluentinc/kafka-connect-jdbc:10.6.0
-RUN confluent-hub install --no-prompt confluentinc/kafka-connect-oracle-cdc:2.2.2
 
 # Install debezium for Oracle 
 RUN wget https://repo1.maven.org/maven2/io/debezium/debezium-connector-oracle/2.1.1.Final/debezium-connector-oracle-2.1.1.Final-plugin.tar.gz
