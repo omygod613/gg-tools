@@ -1,29 +1,38 @@
 @startuml
 group init_snapshot : If fail at any step, restart this process
-Oracle <- Debezium : ROW SHARE MODE LOCK
-Oracle -> Debezium : Read Current SCN
-Oracle -> Debezium : Capture the structure of all tables
-Oracle <- Debezium : Release LOCK
-Oracle -> Debezium : SELECT * FROM  ... AS OF SCN <Current SCN>
-Debezium -> Kafka : Generate READ event for each row, then write to Kafka Topic 
-Debezium <- Kafka : Return Ack
-Debezium -> Kafka : Record Connector Offset
+    group schema change (query-based): QPS 8 ops/s
+        Upstream_Oracle <- Debezium : ROW SHARE MODE LOCK
+        Upstream_Oracle -> Debezium : Read Current SCN
+        Upstream_Oracle -> Debezium : Capture the structure of all tables
+        Upstream_Oracle <- Debezium : Release LOCK
+        Debezium -> Kafka : Generate READ event for each row, then write to Kafka Topic
+        Debezium <- Kafka : Return Ack
+        Debezium -> Kafka : Record Connector Offset
+    end
+    group snapshot (query-based): QPS 1K ops/s
+        Upstream_Oracle -> Debezium : SELECT * FROM  ... AS OF SCN <Current SCN>
+        Debezium -> Kafka : Generate READ event for each row, then write to Kafka Topic
+        Debezium <- Kafka : Return Ack
+        Debezium -> Kafka : Record Connector Offset
+    end
 end
+group streaming (log-based): QPS 70K ops/s
+    loop
+        Upstream_Oracle -> Debezium : Stream from current SCN
+        Debezium -> Kafka : Generate READ event for each row, then write to Kafka Topic
+        Debezium <- Kafka : Return Ack
+        Upstream_Oracle <- Debezium : Update SCN to LOG_MINING_FLUSH table
+        Debezium -> Kafka : Record Connector Offset
+    end
+end
+note over Upstream_Oracle, Kafka : Debezium Guarantees At Least Once delivery
 
 loop
-Oracle -> Debezium : Stream from current SCN
-Debezium -> Kafka : Generate READ event for each row, then write to Kafka Topic 
-Debezium <- Kafka : Return Ack
-Oracle <- Debezium : Update SCN to LOG_MINING_FLUSH table
-Debezium -> Kafka : Record Connector Offset
+    Kafka -> Sink_Connector : Consume Changes based on Offset
+    Sink_Connector -> Downstream_Oracle : Upsert all Changes
+    Sink_Connector <- Downstream_Oracle : Return
+    Kafka <- Sink_Connector : Update Offset
 end
-note over Oracle, Kafka : Debezium Guarantees At Least Once delivery
-
-loop
-Kafka -> Sink_Connector : Consume Changes based on Offset
-Sink_Connector -> MariaDB : Upsert all Changes
-Sink_Connector <- MariaDB : Return
-Kafka <- Sink_Connector : Update Offset
-end
-hnote across : Exactly once delivery
+note over Kafka, Downstream_Oracle : JDBC driver Guarantees At Least Once delivery
+hnote across : Exactly once delivery (Sink Connector uses UPSERT mode to Downstream DB)
 @enduml
