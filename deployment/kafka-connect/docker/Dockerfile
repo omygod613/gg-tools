@@ -13,8 +13,8 @@ RUN mv debezium-connector-oracle /usr/share/java
 RUN cp /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib/ojdbc8-19.7.0.0.jar /usr/share/java/debezium-connector-oracle/
 
 # Must put the mariadb jar into jdbc folder
-RUN wget https://dlm.mariadb.com/2531428/Connectors/java/connector-java-3.0.8/mariadb-java-client-3.0.8.jar
-RUN mv mariadb-java-client-3.0.8.jar /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib
+RUN wget https://dlm.mariadb.com/2720710/Connectors/java/connector-java-3.1.2/mariadb-java-client-3.1.2.jar
+RUN mv mariadb-java-client-3.1.2.jar /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib
 
 # Install JMX agent
 RUN mkdir /opt/jmx
