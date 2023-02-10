@@ -16,7 +16,7 @@ group init_snapshot : If fail at any step, restart this process
         Debezium -> Kafka : Record Connector Offset
     end
 end
-group streaming (log-based): QPS 70K ops/s
+group streaming (log-based)
     loop
         Upstream_Oracle -> Debezium : Stream from current SCN
         Debezium -> Kafka : Generate READ event for each row, then write to Kafka Topic
