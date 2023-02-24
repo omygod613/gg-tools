@@ -9,7 +9,7 @@ replicaCount: 1
 # image: confluentinc/cp-kafka-connect
 # imageTag: 6.1.0
 image: omygod613/cp-kafka-connect
-imageTag: 6.1.8-2.1.2
+imageTag: 6.1.8-20230217
 
 ## Specify a imagePullPolicy
 ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
@@ -28,13 +28,10 @@ servicePort: 8083
 # org.apache.kafka.connect.json.JsonConverter
 configurationOverrides:
   "plugin.path": "/usr/share/java,/usr/share/confluent-hub-components"
-  "key.converter": "org.apache.kafka.connect.storage.StringConverter"
-  "value.converter": "org.apache.kafka.connect.storage.StringConverter"
-  "value.converter.schema.registry.url": "isliao-schema-registry-cp-schema-registry.devns3.svc.cluster.local:8081"
   "key.converter.schemas.enable": "false"
   "value.converter.schemas.enable": "false"
-  # "internal.key.converter": "org.apache.kafka.connect.json.JsonConverter"
-  # "internal.value.converter": "org.apache.kafka.connect.json.JsonConverter"
+  "internal.key.converter": "org.apache.kafka.connect.json.JsonConverter"
+  "internal.value.converter": "org.apache.kafka.connect.json.JsonConverter"
   "config.storage.replication.factor": "1"
   "offset.storage.replication.factor": "1"
   "status.storage.replication.factor": "1"
@@ -52,12 +49,12 @@ resources: {}
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #  cpu: 100m
-  #  memory: 128Mi
-  # requests:
-  #  cpu: 100m
-  #  memory: 128Mi
+  limits:
+   cpu: 100m
+   memory: 128Mi
+  requests:
+   cpu: 100m
+   memory: 128Mi
 
 ## Custom pod annotations
 podAnnotations: {}
@@ -99,7 +96,7 @@ prometheus:
 ## You can list load balanced service endpoint, or list of all brokers (which is hard in K8s).  e.g.:
 ## bootstrapServers: "PLAINTEXT://dozing-prawn-kafka-headless:9092"
 kafka:
-  bootstrapServers: "isliao-kafka.devns3.svc.cluster.local:9092"
+  bootstrapServers: "isliao-kafka:9092"
 
 ## If the Kafka Chart is disabled a URL and port are required to connect
 ## e.g. gnoble-panther-cp-schema-registry:8081
