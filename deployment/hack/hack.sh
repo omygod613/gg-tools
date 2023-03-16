@@ -9,7 +9,6 @@ echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
 source ~/.bashrc
 sqlcmd -S localhost -U sa -P 'Toughpass1!'
 
-
 USE master;  
 GO 
 CREATE DATABASE source_database;
