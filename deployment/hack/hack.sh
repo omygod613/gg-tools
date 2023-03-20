@@ -1,3 +1,29 @@
+# ORACLE
+# sid: ORCLCDB
+# sys/oracle
+
+alter session set "_ORACLE_SCRIPT"=true;
+create user super identified by super123;
+grant all PRIVILEGES to super;
+# super/super123
+
+alter session set "_ORACLE_SCRIPT"=true;
+create user airbyte identified by airbyte123;
+grant all PRIVILEGES to airbyte;
+# airbyte/airbyte123
+
+CREATE TABLE source_users (
+id NUMBER(10) NOT NULL PRIMARY KEY,
+username VARCHAR2(20) NOT NULL,   
+nickname VARCHAR2(20) NOT NULL
+);
+
+INSERT INTO source_users(id, username, nickname) VALUES(1, 'pppp', 'polar bear');
+INSERT INTO source_users(id, username, nickname) VALUES(2, 'llll', 'laugh');
+INSERT INTO source_users(id, username, nickname) VALUES(3, 'dddd', 'dandan');
+INSERT INTO source_users(id, username, nickname) VALUES(4, 'ooooo', 'xxxxx');
+
+
 
 # SQL SERVER
 kubectl exec -it isliao-mssql-mssql-latest-6549cbc9f8-jwwsq -- bash
@@ -48,7 +74,6 @@ mysql -h isliao-mariadb.devns3.svc.cluster.local -uroot -proot_password
 
 # Sink DB must create database before create DB connector
 create database `target_database` default character set utf8mb4 collate utf8mb4_unicode_ci;
-
 use target_database;
 
 CREATE TABLE `target_users` (
@@ -57,6 +82,58 @@ CREATE TABLE `target_users` (
   `nickname` VARCHAR(20) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO target_users(`username`, `nickname`) VALUES('pppp', 'polar bear');
+INSERT INTO target_users(`username`, `nickname`) VALUES('llll', 'laugh');
+INSERT INTO target_users(`username`, `nickname`) VALUES('dddd', 'dandan');
+INSERT INTO target_users(`username`, `nickname`) VALUES('ooooo', 'xxxxx');
+
+
+create database `source_database` default character set utf8mb4 collate utf8mb4_unicode_ci;
+use source_database;
+
+CREATE TABLE `source_users_int` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `username` VARCHAR(20) NOT NULL,
+  `nickname` VARCHAR(20) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO source_users_int(`username`, `nickname`) VALUES('pppp', 'polar bear');
+INSERT INTO source_users_int(`username`, `nickname`) VALUES('llll', 'laugh');
+INSERT INTO source_users_int(`username`, `nickname`) VALUES('dddd', 'dandan');
+INSERT INTO source_users_int(`username`, `nickname`) VALUES('ooooo', 'xxxxx');
+
+#  MiniIO
+# minioadmin | minioadmin
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 kubectl exec -it isliao-kafka-connect-cp-kafka-connect-7584f4d49d-lrkph -c cp-kafka-connect-server -- bash
