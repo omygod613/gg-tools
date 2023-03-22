@@ -38,71 +38,68 @@ sqlcmd -S localhost -U sa -P 'Toughpass1!'
 USE master;  
 GO 
 CREATE DATABASE source_database;
+CREATE DATABASE target_database;
 GO
-CREATE TABLE source_users (id int IDENTITY(1,1) PRIMARY KEY, username varchar(20) NOT NULL, nickname varchar(20) NOT NULL);
+CREATE TABLE source_database.dbo.source_users (id int IDENTITY(1,1) PRIMARY KEY, username varchar(20) NOT NULL, nickname varchar(20) NOT NULL, modified_at DATETIME DEFAULT GETDATE() NOT NULL);
 GO
 
-INSERT INTO source_users(username, nickname) VALUES('pppp', 'polar bear');
-INSERT INTO source_users(username, nickname) VALUES('llll', 'laugh');
-INSERT INTO source_users(username, nickname) VALUES('dddd', 'dandan');
-INSERT INTO source_users(username, nickname) VALUES('ooooo', 'xxxxx');
+INSERT INTO source_database.dbo.source_users(username, nickname) VALUES('pppp', 'polar bear');
+INSERT INTO source_database.dbo.source_users(username, nickname) VALUES('llll', 'laugh');
+INSERT INTO source_database.dbo.source_users(username, nickname) VALUES('dddd', 'dandan');
+INSERT INTO source_database.dbo.source_users(username, nickname) VALUES('ooooo', 'xxxxx');
+
+update source_database.dbo.source_users set username='gogo1', modified_at=GETDATE() where id=1;
+
+select * from source_database.dbo.source_users;
 
 # MySQL
 kubectl exec -it isliao-mysql-0 -- bash
 mysql -h isliao-mysql.devns3.svc.cluster.local -uroot -proot_password
 
 create database `source_database` default character set utf8mb4 collate utf8mb4_unicode_ci;
+create database `target_database` default character set utf8mb4 collate utf8mb4_unicode_ci;
 
-use source_database;
-
-CREATE TABLE `source_users` (
-`id` INT(11) NOT NULL AUTO_INCREMENT,
-`username` VARCHAR(20) NOT NULL,   
-`nickname` VARCHAR(20) NOT NULL,   
-PRIMARY KEY (`id`) 
+CREATE TABLE `source_database`.`source_users` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `username` VARCHAR(20) NOT NULL,
+  `nickname` VARCHAR(20) NOT NULL,
+  `modified_at` DATETIME NOT NULL DEFAULT Now(),
+  PRIMARY KEY (`id`)
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO source_users(`username`, `nickname`) VALUES('pppp', 'polar bear');
-INSERT INTO source_users(`username`, `nickname`) VALUES('llll', 'laugh');
-INSERT INTO source_users(`username`, `nickname`) VALUES('dddd', 'dandan');
-INSERT INTO source_users(`username`, `nickname`) VALUES('ooooo', 'xxxxx');
+INSERT INTO source_database.source_users(`username`, `nickname`) VALUES('pppp', 'polar bear');
+INSERT INTO source_database.source_users(`username`, `nickname`) VALUES('llll', 'laugh');
+INSERT INTO source_database.source_users(`username`, `nickname`) VALUES('dddd', 'dandan');
+INSERT INTO source_database.source_users(`username`, `nickname`) VALUES('ooooo', 'xxxxx');
 
+update source_database.source_users set username='gogo', modified_at=Now() where id=1;
+
+select * from source_database.source_users;
 
 # MariaDB
 kubectl exec -it isliao-mariadb-0 bash
 mysql -h isliao-mariadb.devns3.svc.cluster.local -uroot -proot_password
 
-# Sink DB must create database before create DB connector
-create database `target_database` default character set utf8mb4 collate utf8mb4_unicode_ci;
-use target_database;
-
-CREATE TABLE `target_users` (
-  `id` INT(11) NOT NULL AUTO_INCREMENT,
-  `username` VARCHAR(20) NOT NULL,
-  `nickname` VARCHAR(20) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-INSERT INTO target_users(`username`, `nickname`) VALUES('pppp', 'polar bear');
-INSERT INTO target_users(`username`, `nickname`) VALUES('llll', 'laugh');
-INSERT INTO target_users(`username`, `nickname`) VALUES('dddd', 'dandan');
-INSERT INTO target_users(`username`, `nickname`) VALUES('ooooo', 'xxxxx');
-
-
+# Sink DB must create database before create DB connector (JDBC Sink Connector)
 create database `source_database` default character set utf8mb4 collate utf8mb4_unicode_ci;
-use source_database;
+create database `target_database` default character set utf8mb4 collate utf8mb4_unicode_ci;
 
-CREATE TABLE `source_users_int` (
+CREATE TABLE `source_database`.`source_users` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `username` VARCHAR(20) NOT NULL,
   `nickname` VARCHAR(20) NOT NULL,
+  `modified_at` DATETIME NOT NULL DEFAULT Now(),
   PRIMARY KEY (`id`)
 ) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO source_users_int(`username`, `nickname`) VALUES('pppp', 'polar bear');
-INSERT INTO source_users_int(`username`, `nickname`) VALUES('llll', 'laugh');
-INSERT INTO source_users_int(`username`, `nickname`) VALUES('dddd', 'dandan');
-INSERT INTO source_users_int(`username`, `nickname`) VALUES('ooooo', 'xxxxx');
+INSERT INTO source_database.source_users(`username`, `nickname`) VALUES('pppp', 'polar bear');
+INSERT INTO source_database.source_users(`username`, `nickname`) VALUES('llll', 'laugh');
+INSERT INTO source_database.source_users(`username`, `nickname`) VALUES('dddd', 'dandan');
+INSERT INTO source_database.source_users(`username`, `nickname`) VALUES('ooooo', 'xxxxx');
+
+update source_database.source_users set username='gogo', modified_at=Now() where id=1;
+
+select * from source_database.source_users;
 
 #  MiniIO
 # minioadmin | minioadmin
