@@ -15,9 +15,14 @@ RUN tar zxvf debezium-connector-oracle-2.1.2.Final-plugin.tar.gz
 RUN mv debezium-connector-oracle /usr/share/java
 RUN cp /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib/ojdbc8-19.7.0.0.jar /usr/share/java/debezium-connector-oracle/
 
-# Must put the mariadb jar into jdbc folder
+# Must put the mysql, mariadb driver into jdbc folder
+RUN wget https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-j-8.0.32.tar.gz
+RUN tar zxvf mysql-connector-j-8.0.32.tar.gz
+RUN mv mysql-connector-j-8.0.32/mysql-connector-j-8.0.32.jar /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib
+
 RUN wget https://dlm.mariadb.com/2720710/Connectors/java/connector-java-3.1.2/mariadb-java-client-3.1.2.jar
 RUN mv mariadb-java-client-3.1.2.jar /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib
+
 
 # Install JMX agent
 RUN mkdir /opt/jmx
