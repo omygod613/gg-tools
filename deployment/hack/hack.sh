@@ -15,7 +15,8 @@ grant all PRIVILEGES to airbyte;
 CREATE TABLE source_users (
 id NUMBER(10) NOT NULL PRIMARY KEY,
 username VARCHAR2(20) NOT NULL,   
-nickname VARCHAR2(20) NOT NULL
+nickname VARCHAR2(20) NOT NULL,
+modified_at DATE NOT NULL DEFAULT CURRENT_TIME
 );
 
 INSERT INTO source_users(id, username, nickname) VALUES(1, 'pppp', 'polar bear');
@@ -26,7 +27,7 @@ INSERT INTO source_users(id, username, nickname) VALUES(4, 'ooooo', 'xxxxx');
 
 
 # SQL SERVER
-kubectl exec -it isliao-mssql-mssql-latest-6549cbc9f8-jwwsq -- bash
+kubectl exec -it isliao-mssql-mssql-latest- -- bash
 curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
 curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list | sudo tee /etc/apt/sources.list.d/msprod.list
 apt-get update -y
