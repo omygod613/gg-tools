@@ -16,13 +16,13 @@ CREATE TABLE source_users (
 id NUMBER(10) NOT NULL PRIMARY KEY,
 username VARCHAR2(20) NOT NULL,   
 nickname VARCHAR2(20) NOT NULL,
-modified_at DATE NOT NULL DEFAULT CURRENT_TIME
+modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
-INSERT INTO source_users(id, username, nickname) VALUES(1, 'pppp', 'polar bear');
-INSERT INTO source_users(id, username, nickname) VALUES(2, 'llll', 'laugh');
-INSERT INTO source_users(id, username, nickname) VALUES(3, 'dddd', 'dandan');
-INSERT INTO source_users(id, username, nickname) VALUES(4, 'ooooo', 'xxxxx');
+INSERT INTO source_users(ID, username, nickname) VALUES(1, 'pppp', 'polar bear');
+INSERT INTO source_users(ID, username, nickname) VALUES(2, 'llll', 'laugh');
+INSERT INTO source_users(ID, username, nickname) VALUES(3, 'dddd', 'dandan');
+INSERT INTO source_users(ID, username, nickname) VALUES(4, 'ooooo', 'xxxxx');
 
 
 
@@ -41,7 +41,7 @@ GO
 CREATE DATABASE source_database;
 CREATE DATABASE target_database;
 GO
-CREATE TABLE source_database.dbo.source_users (id int IDENTITY(1,1) PRIMARY KEY, username varchar(20) NOT NULL, nickname varchar(20) NOT NULL, modified_at DATETIME DEFAULT GETDATE() NOT NULL);
+CREATE TABLE source_database.dbo.source_users (id int IDENTITY(1,1) PRIMARY KEY, username varchar(20) NOT NULL, nickname varchar(20) NOT NULL, modified_at DATETIME2 DEFAULT GETDATE() NOT NULL);
 GO
 
 INSERT INTO source_database.dbo.source_users(username, nickname) VALUES('pppp', 'polar bear');

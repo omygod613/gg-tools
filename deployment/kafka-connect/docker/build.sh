@@ -6,4 +6,4 @@ VERSION="6.1.8-20230327"
 
 docker build -t omygod613/cp-kafka-connect:${VERSION} $BASE_DIR/.
 
-kind load docker-image omygod613/cp-kafka-connect:${VERSION} --all-platforms
+kind load docker-image omygod613/cp-kafka-connect:${VERSION}
