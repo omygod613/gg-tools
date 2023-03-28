@@ -16,5 +16,25 @@
   "key.converter.schemas.enable": "true",
   "connection.user": "root",
   "value.converter.schemas.enable": "true",
-  "connection.url": "jdbc:mariadb://isliao-mariadb.devns3.svc.cluster.local:3306/source_database",
+  "connection.url": "jdbc:mariadb://isliao-mariadb.devns3.svc.cluster.local:3306/source_database"
+}
+
+//  timestamp+incrementing
+
+{
+  "name": "source-jdbc-mariadb-demo-0",
+  "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+  "timestamp.column.name": "modified_at",
+  "incrementing.column.name": "id",
+  "connection.password": "root_password",
+  "tasks.max": "1",
+  "transforms": "unwrap",
+  "table.whitelist": "source_users",
+  "mode": "timestamp+incrementing",
+  "topic.prefix": "source-mariadb-",
+  "connection.user": "root",
+  "transforms.unwrap.drop.tombstones": "false",
+  "poll.interval.ms": "5000",
+  "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+  "connection.url": "jdbc:mariadb://isliao-mariadb.devns3.svc.cluster.local:3306/source_database"
 }
