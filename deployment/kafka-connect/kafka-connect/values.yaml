@@ -9,11 +9,11 @@ replicaCount: 1
 # image: confluentinc/cp-kafka-connect
 # imageTag: 6.1.0
 image: omygod613/cp-kafka-connect
-imageTag: 6.1.8-20230217
+imageTag: 6.1.8-20230315
 
 ## Specify a imagePullPolicy
 ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
-imagePullPolicy: Always # IfNotPresent
+imagePullPolicy: IfNotPresent # Always
 
 ## Specify an array of imagePullSecrets.
 ## Secrets must be manually created in the namespace.
@@ -28,10 +28,10 @@ servicePort: 8083
 # org.apache.kafka.connect.json.JsonConverter
 configurationOverrides:
   "plugin.path": "/usr/share/java,/usr/share/confluent-hub-components"
-  "key.converter.schemas.enable": "false"
-  "value.converter.schemas.enable": "false"
-  "internal.key.converter": "org.apache.kafka.connect.json.JsonConverter"
-  "internal.value.converter": "org.apache.kafka.connect.json.JsonConverter"
+  "key.converter": "org.apache.kafka.connect.json.JsonConverter"
+  "value.converter": "org.apache.kafka.connect.json.JsonConverter"
+  "key.converter.schemas.enable": "true"
+  "value.converter.schemas.enable": "true"
   "config.storage.replication.factor": "1"
   "offset.storage.replication.factor": "1"
   "status.storage.replication.factor": "1"
@@ -49,12 +49,6 @@ resources: {}
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  limits:
-   cpu: 100m
-   memory: 128Mi
-  requests:
-   cpu: 100m
-   memory: 128Mi
 
 ## Custom pod annotations
 podAnnotations: {}

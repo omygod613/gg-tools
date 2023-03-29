@@ -1,0 +1,23 @@
+{
+    "name": "source-cdc-mysql-demo-0", 
+    "config": {
+        "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+        "tasks.max": "1",
+        "database.hostname": "isliao-mysql.devns3.svc.cluster.local", 
+        "database.port": "3306", 
+        "database.user": "root", 
+        "database.password": "root_password", 
+        "database.server.id": "1", 
+        "database.server.name": "source", 
+        "database.history.kafka.bootstrap.servers": "isliao-kafka.devns3.svc.cluster.local:9092", 
+        "database.history.kafka.topic": "schema-changes.source_database",
+        "database.include.list": "source_database", 
+        "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+        "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+        "key.converter.schemas.enable": "true",
+        "value.converter.schemas.enable": "true",
+        "transforms": "unwrap",
+        "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+        "transforms.unwrap.drop.tombstones": "false"
+    }
+}
