@@ -1,0 +1,22 @@
+# This scenario creates a single-instance standalone Neo4j
+# machine, that automatically restores from a backup 
+#
+# IN ORDER FOR THIS TO WORK - you must have pre-created a secret, and 
+# you must modify the BUCKET parameter, and make sure backups are in place
+# to be restored.   See the documentation for more information.
+###############################################################
+core:
+    standalone: true
+    restore:
+      enabled: true
+      secretName: azure-credentials
+      database: neo4j,system
+      cloudProvider: azure
+      bucket: circleci-build-system/testy/mcbuild/
+      purgeOnComplete: true
+      forceOverwrite: true
+      timestamp: "latest"
+
+acceptLicenseAgreement: "yes"
+neo4jPassword: mySecretPassword
+

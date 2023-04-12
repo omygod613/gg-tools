@@ -1,0 +1,16 @@
+apiVersion: v2
+appVersion: 4.2.4
+description: Neo4j is the world's leading graph database
+home: https://www.neo4j.com
+icon: http://info.neo4j.com/rs/773-GON-065/images/neo4j_logo.png
+maintainers:
+- email: sovrevage@gmail.com
+  name: StianOvrevage
+name: neo4j-community
+sources:
+- https://github.com/neo4j/neo4j
+- https://github.com/neo4j/docker-neo4j
+- https://github.com/mneedham/k8s-kubectl
+- https://github.com/neo4j-contrib/neo4j-helm
+- https://github.com/equinor/helm-charts/tree/master/charts/neo4j-community
+version: 1.2.5

@@ -1,0 +1,6 @@
+apiVersion: v2
+appVersion: 0.0.11
+description: A Helm chart for Kubernetes
+name: acryl-datahub-actions
+type: application
+version: 0.2.134

@@ -12,5 +12,7 @@ bash deployment/kafka-ui/install.sh
 bash deployment/mysql/install.sh
 bash deployment/mssql/install.sh
 bash deployment/mariadb/install.sh
-bash deployment/oracle/install.sh
+# bash deployment/oracle/install.sh
 bash deployment/minio/install.sh
+
+bash deployment/datahub/install.sh
