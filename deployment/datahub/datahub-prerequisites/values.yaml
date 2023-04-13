@@ -31,6 +31,8 @@ elasticsearch:
   #     requests:
   #       storage: 100M
 
+  clusterHealthCheckParams: "wait_for_status=yellow&timeout=1s"
+
 # Official neo4j chart uses the Neo4j Enterprise Edition which requires a license
 neo4j:
   enabled: false  # set this to true, if you have a license for the enterprise edition
@@ -67,7 +69,7 @@ cp-helm-charts:
   cp-schema-registry:
     enabled: true
     kafka:
-      bootstrapServers: "isliao-kafka:9092"  # <<release-name>>-kafka:9092
+      bootstrapServers: "isliao-datahub-prerequisites-kafka:9092"  # <<release-name>>-kafka:9092
   cp-kafka:
     enabled: false
   cp-zookeeper:
@@ -83,4 +85,4 @@ cp-helm-charts:
 
 # Bitnami version of Kafka that deploys open source Kafka https://artifacthub.io/packages/helm/bitnami/kafka
 kafka:
-  enabled: false
+  enabled: true
