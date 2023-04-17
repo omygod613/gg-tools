@@ -15,4 +15,5 @@ bash deployment/mariadb/install.sh
 # bash deployment/oracle/install.sh
 bash deployment/minio/install.sh
 
-bash deployment/datahub/install.sh
+bash deployment/datahub/install_datahub_prerequisites.sh
+# bash deployment/datahub/install_datahub.sh

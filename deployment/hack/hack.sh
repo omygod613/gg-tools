@@ -104,3 +104,10 @@ select * from source_database.source_users;
 
 #  MiniIO
 # minioadmin | minioadmin
+
+
+
+
+
+#datahub
+pip install 'acryl-datahub[kafka-connect]'
