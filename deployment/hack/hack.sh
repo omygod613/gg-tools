@@ -2,6 +2,8 @@
 # sid: ORCLCDB
 # sys/oracle
 
+# SYS AS SYSDBA
+
 alter session set "_ORACLE_SCRIPT"=true;
 create user super identified by super123;
 grant all PRIVILEGES to super;
