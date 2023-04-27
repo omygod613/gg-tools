@@ -1,12 +1,12 @@
 {
-  "name": "source-jdbc-mariadb-demo-0",
+  "name": "source_demo_batch_mariadb_source_users",
   "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
   "connection.password": "root_password",
   "tasks.max": "1",
   "transforms": "unwrap",
   "table.whitelist": "source_users",
   "mode": "bulk",
-  "topic.prefix": "source-mariadb-",
+  "topic.prefix": "batch_mariadb.",
   "transforms.unwrap.drop.tombstones": "false",
   "poll.interval.ms": "5000",
   "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
@@ -16,13 +16,13 @@
   "key.converter.schemas.enable": "true",
   "connection.user": "root",
   "value.converter.schemas.enable": "true",
-  "connection.url": "jdbc:mariadb://isliao-mariadb.devns3.svc.cluster.local:3306/source_database"
+  "connection.url": "jdbc:mariadb://isliao-mariadb.devns3.svc.cluster.local:3306/target_database"
 }
 
 //  timestamp+incrementing
 
 {
-  "name": "source-jdbc-mariadb-demo-0",
+  "name": "source_demo_batch_mariadb_source_users",
   "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
   "timestamp.column.name": "modified_at",
   "incrementing.column.name": "id",
@@ -31,10 +31,15 @@
   "transforms": "unwrap",
   "table.whitelist": "source_users",
   "mode": "timestamp+incrementing",
-  "topic.prefix": "source-mariadb-",
-  "connection.user": "root",
+  "topic.prefix": "batch_mariadb.",
   "transforms.unwrap.drop.tombstones": "false",
   "poll.interval.ms": "5000",
   "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+  "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+  "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+  "value.converter.use.optional.for.nonrequired": "true",
+  "key.converter.schemas.enable": "true",
+  "connection.user": "root",
+  "value.converter.schemas.enable": "true",
   "connection.url": "jdbc:mariadb://isliao-mariadb.devns3.svc.cluster.local:3306/source_database"
 }
