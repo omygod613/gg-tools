@@ -5,6 +5,12 @@
 # SYS AS SYSDBA
 
 alter session set "_ORACLE_SCRIPT"=true;
+create user root identified by root_password;
+grant all PRIVILEGES to root;
+grant dba to root;
+# root/root_password
+
+alter session set "_ORACLE_SCRIPT"=true;
 create user super identified by super123;
 grant all PRIVILEGES to super;
 # super/super123
@@ -121,4 +127,3 @@ select * from source_database.source_users;
 
 
 #datahub
-pip install 'acryl-datahub[kafka-connect]'

@@ -1,0 +1,7 @@
+source:
+    type: oracle
+    config:
+        host_port: 'isliao-oracle-oracle-db:1521'
+        database: ORCLCDB
+        username: root
+        password: root_password
