@@ -1,5 +1,5 @@
 {
-    "name": "sink_demo-cdc_mariadb_mariadb_source_users",
+    "name": "sink_demo-cdc_mysql_mariadb_source_users",
     "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
     "tasks.max": 1,
     "connection.url": "jdbc:mariadb://isliao-mariadb.devns3.svc.cluster.local:3306/target_database",
