@@ -1,0 +1,16 @@
+source:
+  type: datahub-lineage-file
+  config:
+    # Coordinates
+    file: ./example-recipe.yaml
+    # Whether we want to query datahub-gms for upstream data
+    preserve_upstream: False
+
+sink:
+  type: datahub-rest
+  config:
+    server: "http://localhost:8080"
+
+# pip install 'acryl-datahub==0.10.1'
+# pip install 'acryl-datahub[datahub-lineage-file]'
+# python3 -m datahub ingest -c lineage-recipe-sink-rest.yaml 
