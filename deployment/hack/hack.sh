@@ -2,6 +2,14 @@
 # sid: ORCLCDB
 # sys/oracle
 
+# SYS AS SYSDBA
+
+alter session set "_ORACLE_SCRIPT"=true;
+create user root identified by root_password;
+grant all PRIVILEGES to root;
+grant dba to root;
+# root/root_password
+
 alter session set "_ORACLE_SCRIPT"=true;
 create user super identified by super123;
 grant all PRIVILEGES to super;
@@ -98,9 +106,24 @@ INSERT INTO source_database.source_users(`username`, `nickname`) VALUES('llll', 
 INSERT INTO source_database.source_users(`username`, `nickname`) VALUES('dddd', 'dandan');
 INSERT INTO source_database.source_users(`username`, `nickname`) VALUES('ooooo', 'xxxxx');
 
+CREATE TABLE `target_database`.`target_users` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `username` VARCHAR(20) NOT NULL,
+  `nickname` VARCHAR(20) NOT NULL,
+  `modified_at` DATETIME NOT NULL DEFAULT Now(),
+  PRIMARY KEY (`id`)
+) ENGINE=INNODB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
 update source_database.source_users set username='gogo', modified_at=Now() where id=1;
 
 select * from source_database.source_users;
 
 #  MiniIO
 # minioadmin | minioadmin
+
+
+
+
+
+#datahub

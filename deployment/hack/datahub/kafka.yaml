@@ -1,0 +1,5 @@
+source:
+  type: "kafka"
+  config:
+    # Coordinates
+    connect_uri: "http://isliao-kafka:9092"

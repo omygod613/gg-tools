@@ -40,7 +40,7 @@ replicas: 1
 loadBalService: false
 
 ## name of image
-image: container-registry.oracle.com/database/enterprise:19.3.0.0
+image: omygod613/oe:19.3.0.0
 
 ## image pull policy, IfNotPresent or Always
 imagePullPolicy: Always
