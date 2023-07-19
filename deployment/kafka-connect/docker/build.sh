@@ -2,7 +2,7 @@
 
 BASE_DIR=$(dirname "$0")
 
-VERSION="6.1.8-20230719"
+VERSION="6.1.8-20230718"
 
 docker build -t omygod613/cp-kafka-connect:${VERSION} $BASE_DIR/.
 

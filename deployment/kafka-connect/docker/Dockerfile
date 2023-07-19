@@ -23,8 +23,8 @@ RUN mv mysql-connector-j-8.0.32/mysql-connector-j-8.0.32.jar /usr/share/confluen
 RUN wget https://dlm.mariadb.com/2720710/Connectors/java/connector-java-3.1.2/mariadb-java-client-3.1.2.jar
 RUN mv mariadb-java-client-3.1.2.jar /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib
 
-RUN wget https://github.com/ClickHouse/clickhouse-java/releases/download/v0.4.6/clickhouse-jdbc-0.4.6-shaded.jar
-RUN mv clickhouse-jdbc-0.4.6-shaded.jar /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib
+RUN wget https://github.com/ClickHouse/clickhouse-java/releases/download/v0.4.6/clickhouse-jdbc-0.4.6.jar
+RUN mv clickhouse-jdbc-0.4.6.jar /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib
 
 # RUN wget https://download.microsoft.com/download/a/9/1/a91534b0-ed8c-4501-b491-e1dd0a20335a/sqljdbc_12.2.0.0_enu.tar.gz
 # RUN tar zxvf sqljdbc_12.2.0.0_enu.tar.gz
