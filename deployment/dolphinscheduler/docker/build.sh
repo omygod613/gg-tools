@@ -2,7 +2,7 @@
 
 BASE_DIR=$(dirname "$0")
 
-VERSION="3.2.0"
+VERSION="3.2.0-1"
 
 sh dolphinscheduler-alert-server/build.sh
 sh dolphinscheduler-api/build.sh
