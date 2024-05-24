@@ -1,40 +1,35 @@
-FROM confluentinc/cp-kafka-connect:6.1.8
+FROM confluentinc/cp-kafka-connect:7.6.1
 
 USER root
 
 ENV CONNECT_PLUGIN_PATH="/usr/share/java,/usr/share/confluent-hub-components"
-RUN confluent-hub install --no-prompt debezium/debezium-connector-mysql:2.0.1
-RUN confluent-hub install --no-prompt debezium/debezium-connector-sqlserver:2.0.1
-RUN confluent-hub install --no-prompt confluentinc/kafka-connect-jdbc:10.6.4
-RUN confluent-hub install --no-prompt confluentinc/kafka-connect-s3:10.4.2
-RUN confluent-hub install --no-prompt confluentinc/connect-transforms:1.4.3
+RUN confluent-hub install --no-prompt debezium/debezium-connector-mysql:2.4.2
+RUN confluent-hub install --no-prompt debezium/debezium-connector-sqlserver:2.5.4
+RUN confluent-hub install --no-prompt confluentinc/kafka-connect-jdbc:10.7.6
+RUN confluent-hub install --no-prompt confluentinc/kafka-connect-s3:10.5.12
+RUN confluent-hub install --no-prompt confluentinc/connect-transforms:1.4.6
 
 # Install debezium for Oracle 
-RUN wget https://repo1.maven.org/maven2/io/debezium/debezium-connector-oracle/2.3.0.Final/debezium-connector-oracle-2.3.0.Final-plugin.tar.gz
-RUN tar zxvf debezium-connector-oracle-2.3.0.Final-plugin.tar.gz
-RUN mv debezium-connector-oracle /usr/share/java
-RUN cp /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib/ojdbc8-19.7.0.0.jar /usr/share/java/debezium-connector-oracle/
+RUN wget https://repo1.maven.org/maven2/io/debezium/debezium-connector-oracle/2.6.1.Final/debezium-connector-oracle-2.6.1.Final-plugin.tar.gz
+RUN tar zxvf debezium-connector-oracle-2.6.1.Final-plugin.tar.gz -C /usr/share/java/
+RUN wget https://repo1.maven.org/maven2/com/oracle/database/xml/xdb/21.11.0.0/xdb-21.11.0.0.jar -P /usr/share/java/debezium-connector-oracle/
 
-# Must put the mysql, mariadb driver into jdbc folder
-RUN wget https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-j-8.0.32.tar.gz
-RUN tar zxvf mysql-connector-j-8.0.32.tar.gz
-RUN mv mysql-connector-j-8.0.32/mysql-connector-j-8.0.32.jar /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib
-
-RUN wget https://dlm.mariadb.com/2720710/Connectors/java/connector-java-3.1.2/mariadb-java-client-3.1.2.jar
-RUN mv mariadb-java-client-3.1.2.jar /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib
-
-RUN wget https://github.com/ClickHouse/clickhouse-java/releases/download/v0.4.6/clickhouse-jdbc-0.4.6.jar
-RUN mv clickhouse-jdbc-0.4.6.jar /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib
-
-# RUN wget https://download.microsoft.com/download/a/9/1/a91534b0-ed8c-4501-b491-e1dd0a20335a/sqljdbc_12.2.0.0_enu.tar.gz
-# RUN tar zxvf sqljdbc_12.2.0.0_enu.tar.gz
-# RUN mv sqljdbc_12.2/enu/mssql-jdbc-12.2.0.jre8.jar /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib 
-# RUN mv sqljdbc_12.2/enu/mssql-jdbc-12.2.0.jre11.jar /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib 
-
-
+# Must put the mysql, mariadb, clickhouse, sqlserver driver into jdbc folder
+## mysql
+RUN wget https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-j-8.4.0.tar.gz
+RUN tar zxvf mysql-connector-j-8.4.0.tar.gz -C /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib
+## mariadb
+RUN wget https://dlm.mariadb.com/3824147/Connectors/java/connector-java-3.4.0/mariadb-java-client-3.4.0.jar -P /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib/
+## clickhouse
+RUN wget https://github.com/ClickHouse/clickhouse-java/releases/download/v0.6.0-patch4/clickhouse-jdbc-0.6.0-patch4.jar -P /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib/
+## sqlserver
+RUN wget https://download.microsoft.com/download/9/e/9/9e97cef4-4c64-484c-bd1b-192147912c47/enu/sqljdbc_12.6.1.0_enu.tar.gz
+RUN tar zxvf sqljdbc_12.6.1.0_enu.tar.gz -C /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib
+RUN mv /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib/sqljdbc_12.6/enu/jars/* /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib/
+       
 # Install JMX agent
 RUN mkdir /opt/jmx
-# curl -so jmx_prometheus_javaagent.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.15.0/jmx_prometheus_javaagent-0.15.0.jar
+# curl -so jmx_prometheus_javaagent.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/1.0.0/jmx_prometheus_javaagent-1.0.0.jar
 # ref: https://github.com/debezium/debezium-examples/blob/main/monitoring/debezium-jmx-exporter/Dockerfile
 # https://thedataguy.in/monitor-debezium-mysql-connector-with-prometheus-and-grafana/
 COPY jmx_prometheus_javaagent.jar /opt/jmx/jmx_prometheus_javaagent.jar

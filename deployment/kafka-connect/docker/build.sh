@@ -2,8 +2,8 @@
 
 BASE_DIR=$(dirname "$0")
 
-VERSION="6.1.8-20230726"
+VERSION="7.6.1-20240524"
 
 docker build -t omygod613/cp-kafka-connect:${VERSION} $BASE_DIR/.
 
-kind load docker-image omygod613/cp-kafka-connect:${VERSION}
+# kind load docker-image omygod613/cp-kafka-connect:${VERSION}
