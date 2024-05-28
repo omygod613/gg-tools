@@ -3,8 +3,6 @@ FROM confluentinc/cp-kafka-connect:7.6.1
 USER root
 
 ENV CONNECT_PLUGIN_PATH="/usr/share/java,/usr/share/confluent-hub-components"
-RUN confluent-hub install --no-prompt debezium/debezium-connector-mysql:2.4.2
-RUN confluent-hub install --no-prompt debezium/debezium-connector-sqlserver:2.5.4
 RUN confluent-hub install --no-prompt confluentinc/kafka-connect-jdbc:10.7.6
 RUN confluent-hub install --no-prompt confluentinc/kafka-connect-s3:10.5.12
 RUN confluent-hub install --no-prompt confluentinc/connect-transforms:1.4.6
@@ -13,6 +11,14 @@ RUN confluent-hub install --no-prompt confluentinc/connect-transforms:1.4.6
 RUN wget https://repo1.maven.org/maven2/io/debezium/debezium-connector-oracle/2.6.1.Final/debezium-connector-oracle-2.6.1.Final-plugin.tar.gz
 RUN tar zxvf debezium-connector-oracle-2.6.1.Final-plugin.tar.gz -C /usr/share/java/
 RUN wget https://repo1.maven.org/maven2/com/oracle/database/xml/xdb/21.11.0.0/xdb-21.11.0.0.jar -P /usr/share/java/debezium-connector-oracle/
+
+# Install debezium for MySQL 
+RUN wget https://repo1.maven.org/maven2/io/debezium/debezium-connector-mysql/2.6.1.Final/debezium-connector-mysql-2.6.1.Final-plugin.tar.gz
+RUN tar zxvf debezium-connector-mysql-2.6.1.Final-plugin.tar.gz -C /usr/share/java/
+
+# Install debezium for SQLServer
+RUN wget https://repo1.maven.org/maven2/io/debezium/debezium-connector-sqlserver/2.6.1.Final/debezium-connector-sqlserver-2.6.1.Final-plugin.tar.gz
+RUN tar zxvf debezium-connector-sqlserver-2.6.1.Final-plugin.tar.gz -C /usr/share/java/
 
 # Must put the mysql, mariadb, clickhouse, sqlserver driver into jdbc folder
 ## mysql
