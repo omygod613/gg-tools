@@ -34,10 +34,9 @@ RUN tar zxvf sqljdbc_12.6.1.0_enu.tar.gz -C /usr/share/confluent-hub-components/
 RUN mv /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib/sqljdbc_12.6/enu/jars/* /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib/
        
 # Install JMX agent
-RUN mkdir /opt/jmx
-# curl -so jmx_prometheus_javaagent.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/1.0.0/jmx_prometheus_javaagent-1.0.0.jar
 # ref: https://github.com/debezium/debezium-examples/blob/main/monitoring/debezium-jmx-exporter/Dockerfile
 # https://thedataguy.in/monitor-debezium-mysql-connector-with-prometheus-and-grafana/
-COPY jmx_prometheus_javaagent.jar /opt/jmx/jmx_prometheus_javaagent.jar
+RUN mkdir /opt/jmx
+RUN wget https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/1.0.1/jmx_prometheus_javaagent-1.0.1.jar -O /opt/jmx/jmx_prometheus_javaagent.jar
 COPY config.yml /opt/jmx/config.yml
 COPY connect-distributed /usr/bin/connect-distributed
