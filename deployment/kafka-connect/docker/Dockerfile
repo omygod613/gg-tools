@@ -27,7 +27,7 @@ RUN tar zxvf mysql-connector-j-8.4.0.tar.gz -C /usr/share/confluent-hub-componen
 ## mariadb
 RUN wget https://dlm.mariadb.com/3824147/Connectors/java/connector-java-3.4.0/mariadb-java-client-3.4.0.jar -P /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib/
 ## clickhouse
-RUN wget https://github.com/ClickHouse/clickhouse-java/releases/download/v0.6.0-patch4/clickhouse-jdbc-0.6.0-patch4.jar -P /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib/
+RUN wget https://github.com/ClickHouse/clickhouse-java/releases/download/v0.4.6/clickhouse-jdbc-0.4.6.jar -P /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib/
 ## sqlserver
 RUN wget https://download.microsoft.com/download/9/e/9/9e97cef4-4c64-484c-bd1b-192147912c47/enu/sqljdbc_12.6.1.0_enu.tar.gz
 RUN tar zxvf sqljdbc_12.6.1.0_enu.tar.gz -C /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib
