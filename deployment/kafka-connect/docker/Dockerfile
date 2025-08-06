@@ -16,14 +16,15 @@ RUN wget https://repo1.maven.org/maven2/com/oracle/database/xml/xdb/21.11.0.0/xd
 RUN wget https://repo1.maven.org/maven2/io/debezium/debezium-connector-mysql/2.6.1.Final/debezium-connector-mysql-2.6.1.Final-plugin.tar.gz
 RUN tar zxvf debezium-connector-mysql-2.6.1.Final-plugin.tar.gz -C /usr/share/java/
 # Install debezium for SQLServer
-RUN wget https://repo1.maven.org/maven2/io/debezium/debezium-connector-sqlserver/3.2.0.Final/debezium-connector-sqlserver-3.2.0.Final-plugin.tar.gz
-RUN tar zxvf debezium-connector-sqlserver-3.2.0.Final-plugin.tar.gz -C /usr/share/java/
+RUN wget https://repo1.maven.org/maven2/io/debezium/debezium-connector-sqlserver/2.7.4.Final/debezium-connector-sqlserver-2.7.4.Final-plugin.tar.gz
+RUN tar zxvf debezium-connector-sqlserver-2.7.4.Final-plugin.tar.gz -C /usr/share/java/
 # Install debezium for MongoDB
-RUN wget https://repo1.maven.org/maven2/io/debezium/debezium-connector-mongodb/3.2.0.Final/debezium-connector-mongodb-3.2.0.Final-plugin.tar.gz
-RUN tar zxvf debezium-connector-mongodb-3.2.0.Final-plugin.tar.gz -C /usr/share/java/
-# Install debezium for Debezium JDBC Sink
-RUN wget https://repo1.maven.org/maven2/io/debezium/debezium-connector-jdbc/3.2.0.Final/debezium-connector-jdbc-3.2.0.Final-plugin.tar.gz
-RUN tar zxvf debezium-connector-jdbc-3.2.0.Final-plugin.tar.gz -C /usr/share/java/
+RUN wget https://repo1.maven.org/maven2/io/debezium/debezium-connector-mongodb/2.6.2.Final/debezium-connector-mongodb-2.6.2.Final-plugin.tar.gz
+RUN tar zxvf debezium-connector-mongodb-2.6.2.Final-plugin.tar.gz -C /usr/share/java/
+
+# Install debezium for JDBC Sink
+RUN wget https://repo1.maven.org/maven2/io/debezium/debezium-connector-jdbc/2.7.4.Final/debezium-connector-jdbc-2.7.4.Final-plugin.tar.gz
+RUN tar zxvf debezium-connector-jdbc-2.7.4.Final-plugin.tar.gz -C /usr/share/java/
 
 # Must put the mysql, mariadb, clickhouse, sqlserver driver into jdbc folder
 ## mysql
