@@ -1,3 +1,45 @@
+# Stage 1: Build LegacyCharsetTransform SMT
+FROM maven:3.9-eclipse-temurin-11 AS smt-builder
+
+WORKDIR /build
+
+# Create Maven project structure
+RUN mkdir -p src/main/java/com/example/debezium/smt
+
+# Copy Java source
+COPY LegacyCharsetTransform.java src/main/java/com/example/debezium/smt/
+
+# Create pom.xml
+RUN cat > pom.xml <<'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.example.debezium</groupId>
+    <artifactId>legacy-charset-smt</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>connect-api</artifactId>
+            <version>3.6.0</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>
+EOF
+
+# Build JAR
+RUN mvn clean package -DskipTests -q
+
+# Stage 2: Final Kafka Connect image
 FROM confluentinc/cp-kafka-connect:7.6.1
 
 USER root
@@ -46,3 +88,6 @@ RUN mkdir /opt/jmx
 RUN wget https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/1.0.1/jmx_prometheus_javaagent-1.0.1.jar -O /opt/jmx/jmx_prometheus_javaagent.jar
 COPY config.yml /opt/jmx/config.yml
 COPY connect-distributed /usr/bin/connect-distributed
+
+# Copy LegacyCharsetTransform SMT JAR from builder stage
+COPY --from=smt-builder /build/target/legacy-charset-smt-1.0.0.jar /usr/share/java/legacy-charset-smt-1.0.0.jar
