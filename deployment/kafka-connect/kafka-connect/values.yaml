@@ -77,7 +77,7 @@ prometheus:
   ## JMX Exporter Configuration
   ## ref: https://github.com/prometheus/jmx_exporter
   jmx:
-    enabled: true
+    enabled: false
     image: bitnami/jmx-exporter
     imageTag: 0.17.2-debian-11-r6
     imagePullPolicy: IfNotPresent
