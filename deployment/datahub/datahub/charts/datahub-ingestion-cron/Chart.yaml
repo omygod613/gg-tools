@@ -1,6 +1,0 @@
-apiVersion: v2
-appVersion: v0.10.0
-description: A Helm chart for Kubernetes
-name: datahub-ingestion-cron
-type: application
-version: 0.2.131

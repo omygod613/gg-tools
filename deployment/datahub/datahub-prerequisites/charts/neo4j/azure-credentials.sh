@@ -1,2 +1,0 @@
-export ACCOUNT_NAME=helmbackups
-export ACCOUNT_KEY=7zsRQ7FKyOuoruxffwRNiIsAwWU4TIqNH3fzxayJtqI8MZ7gzEMjv59y2SJtfmYFlL3fnvjFKthkgCSM1Z+2pw==
