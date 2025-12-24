@@ -8,5 +8,5 @@ bash deployment/kafka/upgrade.sh
 bash deployment/mysql/upgrade.sh
 bash deployment/mssql/upgrade.sh
 bash deployment/mariadb/upgrade.sh
-# bash deployment/oracle/upgrade.sh
+bash deployment/oracle/upgrade.sh
 bash deployment/minio/install.sh
