@@ -2,5 +2,5 @@
 
 BASE_DIR=$(dirname "$0")
 
-# helm repo add confluentinc https://confluentinc.github.io/cp-helm-charts/
-helm upgrade --install isliao-kafka $BASE_DIR/kafka
+# Kafka 4.0 with KRaft mode (no Zookeeper required)
+helm upgrade --install isliao-kafka $BASE_DIR/kafka -f $BASE_DIR/values-kraft.yaml
