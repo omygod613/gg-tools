@@ -1,7 +1,0 @@
-source:
-    type: mysql
-    config:
-        host_port: 'isliao-mysql:3306'
-        database: source_database
-        username: root
-        password: root_password
