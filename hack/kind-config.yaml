@@ -1,0 +1,30 @@
+# Kind cluster configuration for E2E testing
+# Oracle DB requires significant resources
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      # Kafka Connect REST API
+      - containerPort: 30083
+        hostPort: 8083
+        protocol: TCP
+      # Kafka Connect UI
+      - containerPort: 30080
+        hostPort: 8000
+        protocol: TCP
+      # Kafka
+      - containerPort: 30092
+        hostPort: 9092
+        protocol: TCP
+    kubeadmConfigPatches:
+      - |
+        kind: InitConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "ingress-ready=true"
+  - role: worker
+    # Worker node for running databases
+    extraMounts:
+      - hostPath: /tmp/kind-data
+        containerPath: /data
