@@ -1,4 +1,4 @@
 #!/bin/bash
 
-helm uninstall isliao-mysql
-kubectl delete pvc data-isliao-mysql-0
+helm uninstall dbrep-mysql
+kubectl delete pvc data-dbrep-mysql-0

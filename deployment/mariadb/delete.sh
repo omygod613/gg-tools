@@ -1,4 +1,4 @@
 #!/bin/bash
 
-helm uninstall isliao-mariadb
-kubectl delete pvc data-isliao-mariadb-0
+helm uninstall dbrep-mariadb
+kubectl delete pvc data-dbrep-mariadb-0

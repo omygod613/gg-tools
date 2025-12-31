@@ -95,8 +95,18 @@ setup-oracle:
 ifeq ($(LIGHTWEIGHT),1)
 	@echo "[INFO] Setting up Oracle XE 21c..."
 	@POD=$$(kubectl get pods -n $(NAMESPACE) -l app=oracle-db -o jsonpath='{.items[0].metadata.name}') && \
-	kubectl cp $(ORACLE_SQL_SETUP) $$POD:/tmp/oracle-setup.sql -n $(NAMESPACE) && \
-	kubectl exec $$POD -n $(NAMESPACE) -- sqlplus -S sys/oracle@localhost:1521/$(ORACLE_SID) as sysdba @/tmp/oracle-setup.sql
+	echo "[INFO] Step 1: Enabling ARCHIVELOG mode..." && \
+	kubectl cp $(HACK_DIR)/sql/oracle-xe-archivelog.sql $$POD:/tmp/archivelog.sql -n $(NAMESPACE) && \
+	kubectl exec $$POD -n $(NAMESPACE) -- sqlplus -S / as sysdba @/tmp/archivelog.sql && \
+	echo "[INFO] Step 2: Creating CDC user in CDB..." && \
+	kubectl cp $(HACK_DIR)/sql/oracle-xe-cdc-user.sql $$POD:/tmp/cdc-user.sql -n $(NAMESPACE) && \
+	kubectl exec $$POD -n $(NAMESPACE) -- sqlplus -S sys/oracle@localhost:1521/$(ORACLE_SID) as sysdba @/tmp/cdc-user.sql && \
+	echo "[INFO] Step 3: Propagating CDC user to PDB..." && \
+	kubectl cp $(HACK_DIR)/sql/oracle-xe-pdb-user.sql $$POD:/tmp/pdb-user.sql -n $(NAMESPACE) && \
+	kubectl exec $$POD -n $(NAMESPACE) -- sqlplus -S sys/oracle@localhost:1521/$(ORACLE_SID) as sysdba @/tmp/pdb-user.sql && \
+	echo "[INFO] Step 4: Creating DEMO schema and source table..." && \
+	kubectl cp $(HACK_DIR)/sql/oracle-xe-demo-schema.sql $$POD:/tmp/demo-schema.sql -n $(NAMESPACE) && \
+	kubectl exec $$POD -n $(NAMESPACE) -- sqlplus -S sys/oracle@localhost:1521/$(ORACLE_PDB) as sysdba @/tmp/demo-schema.sql
 else
 	@echo "[INFO] Setting up Oracle EE (CDB level - Debezium user)..."
 	kubectl cp $(HACK_DIR)/sql/oracle-cdb-setup.sql $(ORACLE_POD):/tmp/oracle-cdb-setup.sql -n $(NAMESPACE)
@@ -117,28 +127,40 @@ setup-mariadb:
 # Register source connector
 register-source:
 	@echo "[INFO] Registering Debezium Oracle source connector..."
-	@curl -s -X POST $(KAFKA_CONNECT_URL)/connectors \
+	@kubectl cp $(ORACLE_CONNECTOR) dbrep-kafka-controller-0:/tmp/source-connector.json -n $(NAMESPACE)
+	@kubectl exec dbrep-kafka-controller-0 -n $(NAMESPACE) -- curl -s --max-time 120 -X POST \
+		http://dbrep-kafka-connect-cp-kafka-connect:8083/connectors \
 		-H "Content-Type: application/json" \
-		-d @$(ORACLE_CONNECTOR) | jq .
+		-d @/tmp/source-connector.json | jq . || true
 	@echo "[INFO] Waiting 30s for initial snapshot..."
 	@sleep 30
+	@echo "[INFO] Verifying source connector..."
+	@kubectl exec dbrep-kafka-controller-0 -n $(NAMESPACE) -- curl -s \
+		http://dbrep-kafka-connect-cp-kafka-connect:8083/connectors/source_cdc_oracle_demo/status | jq -r '.tasks[0].state' || echo "UNKNOWN"
 
 # Register sink connector
 register-sink:
 	@echo "[INFO] Registering JDBC sink connector..."
-	@curl -s -X POST $(KAFKA_CONNECT_URL)/connectors \
+	@kubectl cp $(HACK_DIR)/sink-jdbc/cdc_oracle_mariadb-demo.json dbrep-kafka-controller-0:/tmp/sink-connector.json -n $(NAMESPACE)
+	@kubectl exec dbrep-kafka-controller-0 -n $(NAMESPACE) -- curl -s --max-time 120 -X POST \
+		http://dbrep-kafka-connect-cp-kafka-connect:8083/connectors \
 		-H "Content-Type: application/json" \
-		-d @$(HACK_DIR)/sink-jdbc/cdc_oracle_mariadb-demo.json | jq .
+		-d @/tmp/sink-connector.json | jq . || true
 	@echo "[INFO] Waiting 10s for sync..."
 	@sleep 10
+	@echo "[INFO] Verifying sink connector..."
+	@kubectl exec dbrep-kafka-controller-0 -n $(NAMESPACE) -- curl -s \
+		http://dbrep-kafka-connect-cp-kafka-connect:8083/connectors/sink_cdc_oracle_to_mariadb/status | jq -r '.tasks[0].state' || echo "UNKNOWN"
 
 # Check connector status
 status:
 	@echo "[INFO] Connector Status:"
 	@echo "--- Source (source_cdc_oracle_demo) ---"
-	@curl -s $(KAFKA_CONNECT_URL)/connectors/source_cdc_oracle_demo/status 2>/dev/null | jq . || echo "NOT FOUND"
+	@kubectl exec dbrep-kafka-controller-0 -n $(NAMESPACE) -- curl -s \
+		http://dbrep-kafka-connect-cp-kafka-connect:8083/connectors/source_cdc_oracle_demo/status 2>/dev/null | jq . || echo "NOT FOUND"
 	@echo "--- Sink (sink_cdc_oracle_to_mariadb) ---"
-	@curl -s $(KAFKA_CONNECT_URL)/connectors/sink_cdc_oracle_to_mariadb/status 2>/dev/null | jq . || echo "NOT FOUND"
+	@kubectl exec dbrep-kafka-controller-0 -n $(NAMESPACE) -- curl -s \
+		http://dbrep-kafka-connect-cp-kafka-connect:8083/connectors/sink_cdc_oracle_to_mariadb/status 2>/dev/null | jq . || echo "NOT FOUND"
 
 # Verify data in MariaDB
 verify:
@@ -201,8 +223,10 @@ topics:
 # Clean up connectors
 clean:
 	@echo "[INFO] Deleting connectors..."
-	-@curl -s -X DELETE $(KAFKA_CONNECT_URL)/connectors/source_cdc_oracle_demo
-	-@curl -s -X DELETE $(KAFKA_CONNECT_URL)/connectors/sink_cdc_oracle_to_mariadb
+	-@kubectl exec dbrep-kafka-controller-0 -n $(NAMESPACE) -- curl -s -X DELETE \
+		http://dbrep-kafka-connect-cp-kafka-connect:8083/connectors/source_cdc_oracle_demo
+	-@kubectl exec dbrep-kafka-controller-0 -n $(NAMESPACE) -- curl -s -X DELETE \
+		http://dbrep-kafka-connect-cp-kafka-connect:8083/connectors/sink_cdc_oracle_to_mariadb
 	@echo "[OK] Connectors deleted"
 
 # Full reset
@@ -312,7 +336,9 @@ endif
 	-helm uninstall dbrep-kafka-connect-ui -n $(NAMESPACE)
 	-helm uninstall dbrep-kafka-connect -n $(NAMESPACE)
 	-helm uninstall dbrep-kafka -n $(NAMESPACE)
-	@echo "[OK] All services deleted"
+	@echo "[INFO] Deleting PVCs..."
+	-kubectl delete pvc --all -n $(NAMESPACE)
+	@echo "[OK] All services and PVCs deleted"
 
 # Wait for pods to be ready
 wait-ready:

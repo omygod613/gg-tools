@@ -1,0 +1,35 @@
+-- Propagate CDC user to PDB (Oracle XE 21c workaround)
+-- The CONTAINER=ALL doesn't always propagate in XE, so we manually create in PDB
+-- Run as: sqlplus sys/oracle@localhost:1521/XE as sysdba
+
+SET ECHO OFF
+SET FEEDBACK OFF
+WHENEVER SQLERROR CONTINUE
+
+ALTER SESSION SET "_ORACLE_SCRIPT"=true;
+ALTER SESSION SET CONTAINER=XEPDB1;
+
+-- Create or update user in PDB
+BEGIN
+  EXECUTE IMMEDIATE 'CREATE USER c##dbzcdc IDENTIFIED BY dbz';
+EXCEPTION
+  WHEN OTHERS THEN
+    IF SQLCODE = -1920 THEN
+      EXECUTE IMMEDIATE 'ALTER USER c##dbzcdc IDENTIFIED BY dbz';
+    ELSE
+      RAISE;
+    END IF;
+END;
+/
+
+-- Grant privileges in PDB
+GRANT CONNECT, RESOURCE TO c##dbzcdc;
+GRANT CREATE SESSION TO c##dbzcdc;
+GRANT SELECT ANY TABLE TO c##dbzcdc;
+GRANT SELECT ANY DICTIONARY TO c##dbzcdc;
+GRANT FLASHBACK ANY TABLE TO c##dbzcdc;
+GRANT SELECT_CATALOG_ROLE TO c##dbzcdc;
+GRANT EXECUTE_CATALOG_ROLE TO c##dbzcdc;
+ALTER USER c##dbzcdc QUOTA UNLIMITED ON users;
+
+EXIT;
