@@ -1,4 +1,4 @@
 #!/bin/bash
 
-helm uninstall isliao-oracle
+helm uninstall dbrep-oracle
 kubectl delete secret regcred

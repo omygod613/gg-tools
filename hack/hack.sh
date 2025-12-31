@@ -102,7 +102,7 @@ COMMIT;
 
 
 # SQL SERVER
-kubectl exec -it isliao-mssql-mssql-latest- -- bash
+kubectl exec -it dbrep-mssql-mssql-latest- -- bash
 curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
 curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list | sudo tee /etc/apt/sources.list.d/msprod.list
 apt-get update -y
@@ -129,8 +129,8 @@ update source_database.dbo.source_users set username='gogo1', modified_at=GETDAT
 select * from source_database.dbo.source_users;
 
 # MySQL
-kubectl exec -it isliao-mysql-0 -- bash
-mysql -h isliao-mysql.devns3.svc.cluster.local -uroot -proot_password
+kubectl exec -it dbrep-mysql-0 -- bash
+mysql -h dbrep-mysql.devns3.svc.cluster.local -uroot -proot_password
 
 create database `source_database` default character set utf8mb4 collate utf8mb4_unicode_ci;
 create database `target_database` default character set utf8mb4 collate utf8mb4_unicode_ci;
@@ -153,8 +153,8 @@ update source_database.source_users set username='gogo', modified_at=Now() where
 select * from source_database.source_users;
 
 # MariaDB
-kubectl exec -it isliao-mariadb-0 bash
-mysql -h isliao-mariadb.devns3.svc.cluster.local -uroot -proot_password
+kubectl exec -it dbrep-mariadb-0 bash
+mysql -h dbrep-mariadb.devns3.svc.cluster.local -uroot -proot_password
 
 # Sink DB must create database before create DB connector (JDBC Sink Connector)
 create database `source_database` default character set utf8mb4 collate utf8mb4_unicode_ci;

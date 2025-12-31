@@ -3,4 +3,4 @@
 BASE_DIR=$(dirname "$0")
 
 # helm repo add bitnami https://charts.bitnami.com/bitnami
-helm install isliao-mariadb $BASE_DIR/mariadb
+helm install dbrep-mariadb $BASE_DIR/mariadb

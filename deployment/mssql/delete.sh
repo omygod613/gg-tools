@@ -1,3 +1,3 @@
 #!/bin/bash
 
-helm uninstall isliao-mssql
+helm uninstall dbrep-mssql

@@ -37,7 +37,7 @@ This exposes:
 Connect to Oracle as SYSDBA:
 
 ```bash
-kubectl exec -it isliao-oracle-oracle-db-0 -- sqlplus sys/oracle@localhost:1521/ORCLCDB as sysdba
+kubectl exec -it dbrep-oracle-oracle-db-0 -- sqlplus sys/oracle@localhost:1521/ORCLCDB as sysdba
 ```
 
 Run the following SQL to create Debezium user and grant privileges:
@@ -109,7 +109,7 @@ COMMIT;
 Connect to MariaDB:
 
 ```bash
-kubectl exec -it isliao-mariadb-0 -- mysql -h isliao-mariadb.devns3.svc.cluster.local -uroot -proot_password
+kubectl exec -it dbrep-mariadb-0 -- mysql -h dbrep-mariadb.devns3.svc.cluster.local -uroot -proot_password
 ```
 
 Create the target database:
@@ -155,7 +155,7 @@ curl http://localhost:8083/connectors/sink_cdc_oracle_to_mariadb/status | jq
 Check MariaDB for replicated data:
 
 ```bash
-kubectl exec -it isliao-mariadb-0 -- mysql -h isliao-mariadb.devns3.svc.cluster.local -uroot -proot_password -e "SELECT * FROM target_database.target_orders;"
+kubectl exec -it dbrep-mariadb-0 -- mysql -h dbrep-mariadb.devns3.svc.cluster.local -uroot -proot_password -e "SELECT * FROM target_database.target_orders;"
 ```
 
 Expected output: 4 rows matching Oracle source data.
@@ -188,7 +188,7 @@ COMMIT;
 ### Verify Changes in MariaDB
 
 ```bash
-kubectl exec -it isliao-mariadb-0 -- mysql -h isliao-mariadb.devns3.svc.cluster.local -uroot -proot_password -e "SELECT * FROM target_database.target_orders ORDER BY ID;"
+kubectl exec -it dbrep-mariadb-0 -- mysql -h dbrep-mariadb.devns3.svc.cluster.local -uroot -proot_password -e "SELECT * FROM target_database.target_orders ORDER BY ID;"
 ```
 
 Expected:
@@ -201,19 +201,19 @@ Expected:
 ### Check Connector Logs
 
 ```bash
-kubectl logs -f deployment/isliao-kafka-connect-cp-kafka-connect --tail=100
+kubectl logs -f deployment/dbrep-kafka-connect-cp-kafka-connect --tail=100
 ```
 
 ### Check Kafka Topics
 
 ```bash
-kubectl exec -it isliao-kafka-0 -- kafka-topics.sh --bootstrap-server localhost:9092 --list | grep cdc_oracle
+kubectl exec -it dbrep-kafka-0 -- kafka-topics.sh --bootstrap-server localhost:9092 --list | grep cdc_oracle
 ```
 
 ### Consume Messages from Topic
 
 ```bash
-kubectl exec -it isliao-kafka-0 -- kafka-console-consumer.sh \
+kubectl exec -it dbrep-kafka-0 -- kafka-console-consumer.sh \
   --bootstrap-server localhost:9092 \
   --topic cdc_oracle.DEMO.SOURCE_ORDERS \
   --from-beginning \

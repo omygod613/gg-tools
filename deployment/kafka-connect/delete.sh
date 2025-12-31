@@ -1,3 +1,3 @@
 #!/bin/bash
 
-helm uninstall isliao-kafka-connect
+helm uninstall dbrep-kafka-connect

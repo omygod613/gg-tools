@@ -1,3 +1,3 @@
 #!/bin/bash
 
-helm uninstall isliao-kafka
+helm uninstall dbrep-kafka
