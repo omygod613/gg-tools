@@ -7,8 +7,8 @@
 
 # Configuration
 KAFKA_CONNECT_URL ?= http://localhost:8083
-MARIADB_POD ?= isliao-mariadb-0
-MARIADB_HOST ?= isliao-mariadb.devns3.svc.cluster.local
+MARIADB_POD ?= dbrep-mariadb-0
+MARIADB_HOST ?= dbrep-mariadb.devns3.svc.cluster.local
 MARIADB_USER ?= root
 MARIADB_PASS ?= root_password
 NAMESPACE ?= devns3
@@ -19,13 +19,13 @@ ROOT_DIR := $(HACK_DIR)/..
 # Oracle configuration - set LIGHTWEIGHT=1 for Oracle XE 21c (gvenzl image)
 LIGHTWEIGHT ?= 1
 ifeq ($(LIGHTWEIGHT),1)
-  ORACLE_POD ?= isliao-oracle-oracle-db
+  ORACLE_POD ?= dbrep-oracle-oracle-db
   ORACLE_SID ?= XE
   ORACLE_PDB ?= XEPDB1
   ORACLE_SQL_SETUP := $(HACK_DIR)/sql/oracle-xe-setup.sql
   ORACLE_CONNECTOR := $(HACK_DIR)/source-debezium/oracle-free-demo.json
 else
-  ORACLE_POD ?= isliao-oracle-oracle-db-0
+  ORACLE_POD ?= dbrep-oracle-oracle-db-0
   ORACLE_SID ?= ORCLCDB
   ORACLE_PDB ?= ORCLPDB1
   ORACLE_SQL_SETUP := $(HACK_DIR)/sql/oracle-pdb-setup.sql
@@ -86,8 +86,8 @@ test: test-insert test-update test-delete verify
 # Port forwarding (run in separate terminal)
 port-forward:
 	@echo "[INFO] Starting port forwarding..."
-	@kubectl port-forward svc/isliao-kafka-connect-cp-kafka-connect 8083:8083 & \
-	 kubectl port-forward svc/isliao-kafka-connect-ui 8000:8000 & \
+	@kubectl port-forward svc/dbrep-kafka-connect-cp-kafka-connect 8083:8083 & \
+	 kubectl port-forward svc/dbrep-kafka-connect-ui 8000:8000 & \
 	 wait
 
 # Setup Oracle
@@ -192,11 +192,11 @@ endif
 
 # View Kafka Connect logs
 logs:
-	kubectl logs -f deployment/isliao-kafka-connect-cp-kafka-connect --tail=100
+	kubectl logs -f deployment/dbrep-kafka-connect-cp-kafka-connect --tail=100
 
 # List Kafka topics
 topics:
-	@kubectl exec isliao-kafka-0 -- kafka-topics.sh --bootstrap-server localhost:9092 --list 2>/dev/null | grep -E "^cdc_oracle|^schema-changes" || echo "No CDC topics found"
+	@kubectl exec dbrep-kafka-0 -- kafka-topics.sh --bootstrap-server localhost:9092 --list 2>/dev/null | grep -E "^cdc_oracle|^schema-changes" || echo "No CDC topics found"
 
 # Clean up connectors
 clean:
@@ -284,19 +284,19 @@ deploy: check-tools
 	-kubectl create ns $(NAMESPACE)
 	kubectl config set-context --current --namespace $(NAMESPACE)
 	@echo "[INFO] Deploying Kafka..."
-	cd $(ROOT_DIR) && helm upgrade --install isliao-kafka deployment/kafka/kafka -f deployment/kafka/values-kraft.yaml -n $(NAMESPACE)
+	cd $(ROOT_DIR) && helm upgrade --install dbrep-kafka deployment/kafka/kafka -f deployment/kafka/values-kraft.yaml -n $(NAMESPACE)
 	@echo "[INFO] Deploying Kafka Connect..."
-	cd $(ROOT_DIR) && helm upgrade --install isliao-kafka-connect deployment/kafka-connect/kafka-connect -n $(NAMESPACE)
+	cd $(ROOT_DIR) && helm upgrade --install dbrep-kafka-connect deployment/kafka-connect/kafka-connect -n $(NAMESPACE)
 	@echo "[INFO] Deploying Kafka Connect UI..."
-	cd $(ROOT_DIR) && helm upgrade --install isliao-kafka-connect-ui deployment/kafka-connect-ui/kafka-connect-ui -n $(NAMESPACE)
+	cd $(ROOT_DIR) && helm upgrade --install dbrep-kafka-connect-ui deployment/kafka-connect-ui/kafka-connect-ui -n $(NAMESPACE)
 	@echo "[INFO] Deploying MariaDB..."
-	cd $(ROOT_DIR) && helm upgrade --install isliao-mariadb deployment/mariadb/mariadb -n $(NAMESPACE)
+	cd $(ROOT_DIR) && helm upgrade --install dbrep-mariadb deployment/mariadb/mariadb -n $(NAMESPACE)
 ifeq ($(LIGHTWEIGHT),1)
 	@echo "[INFO] Deploying Oracle XE 21c (lightweight, ~2-3min startup)..."
 	kubectl apply -f $(ROOT_DIR)/deployment/oracle/oracle-free.yaml -n $(NAMESPACE)
 else
 	@echo "[INFO] Deploying Oracle EE 19c (full, ~10min startup)..."
-	cd $(ROOT_DIR) && helm upgrade --install isliao-oracle deployment/oracle/oracle-db -n $(NAMESPACE)
+	cd $(ROOT_DIR) && helm upgrade --install dbrep-oracle deployment/oracle/oracle-db -n $(NAMESPACE)
 endif
 	@echo "[OK] All services deployed"
 
@@ -306,12 +306,12 @@ deploy-delete:
 ifeq ($(LIGHTWEIGHT),1)
 	-kubectl delete -f $(ROOT_DIR)/deployment/oracle/oracle-free.yaml -n $(NAMESPACE)
 else
-	-helm uninstall isliao-oracle -n $(NAMESPACE)
+	-helm uninstall dbrep-oracle -n $(NAMESPACE)
 endif
-	-helm uninstall isliao-mariadb -n $(NAMESPACE)
-	-helm uninstall isliao-kafka-connect-ui -n $(NAMESPACE)
-	-helm uninstall isliao-kafka-connect -n $(NAMESPACE)
-	-helm uninstall isliao-kafka -n $(NAMESPACE)
+	-helm uninstall dbrep-mariadb -n $(NAMESPACE)
+	-helm uninstall dbrep-kafka-connect-ui -n $(NAMESPACE)
+	-helm uninstall dbrep-kafka-connect -n $(NAMESPACE)
+	-helm uninstall dbrep-kafka -n $(NAMESPACE)
 	@echo "[OK] All services deleted"
 
 # Wait for pods to be ready

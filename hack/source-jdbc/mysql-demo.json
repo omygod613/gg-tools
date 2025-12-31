@@ -16,5 +16,5 @@
   "key.converter.schemas.enable": "true",
   "connection.user": "root",
   "value.converter.schemas.enable": "true",
-  "connection.url": "jdbc:mysql://isliao-mysql.devns3.svc.cluster.local:3306/source_database"
+  "connection.url": "jdbc:mysql://dbrep-mysql.devns3.svc.cluster.local:3306/source_database"
 }
