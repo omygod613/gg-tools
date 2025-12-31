@@ -1,0 +1,65 @@
+# Lightweight Oracle XE 21c deployment (compatible with Debezium 2.1.x)
+# Usage: kubectl apply -f oracle-free.yaml -n devns3
+# Note: Oracle 23ai not supported by Debezium 2.1.x, use XE 21c instead
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: isliao-oracle-oracle-db
+type: Opaque
+stringData:
+  oracle_pwd: "oracle"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: isliao-oracle-oracle-db
+spec:
+  type: ClusterIP
+  ports:
+    - name: oracle
+      port: 1521
+      targetPort: 1521
+  selector:
+    app: oracle-db
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: isliao-oracle-oracle-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oracle-db
+  template:
+    metadata:
+      labels:
+        app: oracle-db
+    spec:
+      containers:
+        - name: oracle-db
+          image: gvenzl/oracle-xe:21-slim
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 1521
+          env:
+            - name: ORACLE_PASSWORD
+              value: "oracle"
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - healthcheck.sh
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"

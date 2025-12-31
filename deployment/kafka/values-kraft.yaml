@@ -120,3 +120,25 @@ provisioning:
 ## Network policy - disabled for development
 networkPolicy:
   enabled: false
+
+## Extra configuration for single-broker development setup
+extraConfig: |-
+  offsets.topic.replication.factor=1
+  transaction.state.log.replication.factor=1
+  transaction.state.log.min.isr=1
+  default.replication.factor=1
+  min.insync.replicas=1
+  log.cleanup.policy=compact
+
+## Extra environment variables for Kafka
+extraEnvVars:
+  - name: KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR
+    value: "1"
+  - name: KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
+    value: "1"
+  - name: KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR
+    value: "1"
+  - name: KAFKA_CFG_DEFAULT_REPLICATION_FACTOR
+    value: "1"
+  - name: KAFKA_CFG_MIN_INSYNC_REPLICAS
+    value: "1"
