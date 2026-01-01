@@ -1,10 +1,10 @@
-# GG-Tools: Database Replication & CDC Toolkit
+# Kafka-DBSync: Database Replication & CDC Toolkit
 
 A comprehensive Kubernetes-based toolkit for Change Data Capture (CDC) and database replication using Kafka, Debezium, and JDBC connectors.
 
 ## Overview
 
-GG-Tools provides infrastructure and automation for building multi-database CDC pipelines that stream changes from source databases to target databases in real-time. It supports Oracle, MySQL, MariaDB, and MSSQL with flexible deployment options for development and testing.
+Kafka-DBSync provides infrastructure and automation for building multi-database CDC pipelines that stream changes from source databases to target databases in real-time. It supports Oracle, MySQL, MariaDB, and MSSQL with flexible deployment options for development and testing.
 
 ### Key Features
 
