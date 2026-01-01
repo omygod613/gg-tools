@@ -1,0 +1,6 @@
+dependencies:
+- name: mssql-latest
+  repository: file://../../helm-chart/mssql
+  version: 0.1.1
+digest: sha256:10f152d616ce45d088575a1238875f188c170e7154826d418d99633b7f3a482f
+generated: "2025-12-31T17:18:07.84771412+08:00"

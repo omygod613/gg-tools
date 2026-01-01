@@ -8,10 +8,10 @@
 # Configuration
 KAFKA_CONNECT_URL ?= http://localhost:8083
 MARIADB_POD ?= dbrep-mariadb-0
-MARIADB_HOST ?= dbrep-mariadb.devns3.svc.cluster.local
+MARIADB_HOST ?= dbrep-mariadb.dev.svc.cluster.local
 MARIADB_USER ?= root
 MARIADB_PASS ?= root_password
-NAMESPACE ?= devns3
+NAMESPACE ?= dev
 CLUSTER_NAME ?= gg-tools
 HACK_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 ROOT_DIR := $(HACK_DIR)/..
@@ -308,19 +308,26 @@ deploy: check-tools
 	-kubectl create ns $(NAMESPACE)
 	kubectl config set-context --current --namespace $(NAMESPACE)
 	@echo "[INFO] Deploying Kafka..."
-	cd $(ROOT_DIR) && helm upgrade --install dbrep-kafka deployment/kafka/kafka -f deployment/kafka/values-kraft.yaml -n $(NAMESPACE)
+	cd $(ROOT_DIR) && helm upgrade --install dbrep-kafka deployment/kafka -f deployment/kafka/values-kraft.yaml -n $(NAMESPACE)
 	@echo "[INFO] Deploying Kafka Connect..."
-	cd $(ROOT_DIR) && helm upgrade --install dbrep-kafka-connect deployment/kafka-connect/kafka-connect -n $(NAMESPACE)
+	cd $(ROOT_DIR) && helm upgrade --install dbrep-kafka-connect deployment/kafka-connect -f deployment/kafka-connect/values.yaml -n $(NAMESPACE)
 	@echo "[INFO] Deploying Kafka Connect UI..."
-	cd $(ROOT_DIR) && helm upgrade --install dbrep-kafka-connect-ui deployment/kafka-connect-ui/kafka-connect-ui -n $(NAMESPACE)
+	cd $(ROOT_DIR) && helm upgrade --install dbrep-kafka-connect-ui deployment/kafka-connect-ui -f deployment/kafka-connect-ui/values.yaml -n $(NAMESPACE)
 	@echo "[INFO] Deploying MariaDB..."
-	cd $(ROOT_DIR) && helm upgrade --install dbrep-mariadb deployment/mariadb/mariadb -n $(NAMESPACE)
+	cd $(ROOT_DIR) && helm upgrade --install dbrep-mariadb deployment/mariadb -f deployment/mariadb/values.yaml -n $(NAMESPACE)
+	@echo "[INFO] Deploying Minio..."
+	-kubectl delete -f $(ROOT_DIR)/helm-chart/minio/minio-dev.yaml -n $(NAMESPACE) || true
+	kubectl apply -f $(ROOT_DIR)/helm-chart/minio/minio-dev.yaml -n $(NAMESPACE)
+	@echo "[INFO] Deploying MSSQL..."
+	cd $(ROOT_DIR) && helm upgrade --install dbrep-mssql deployment/mssql -f deployment/mssql/values.yaml -n $(NAMESPACE)
+	@echo "[INFO] Deploying MySQL..."
+	cd $(ROOT_DIR) && helm upgrade --install dbrep-mysql deployment/mysql -f deployment/mysql/values.yaml -n $(NAMESPACE)
 ifeq ($(LIGHTWEIGHT),1)
 	@echo "[INFO] Deploying Oracle XE 21c (lightweight, ~2-3min startup)..."
 	kubectl apply -f $(ROOT_DIR)/deployment/oracle/oracle-free.yaml -n $(NAMESPACE)
 else
 	@echo "[INFO] Deploying Oracle EE 19c (full, ~10min startup)..."
-	cd $(ROOT_DIR) && helm upgrade --install dbrep-oracle deployment/oracle/oracle-db -n $(NAMESPACE)
+	cd $(ROOT_DIR) && helm upgrade --install dbrep-oracle deployment/oracle -f deployment/oracle/values.yaml -n $(NAMESPACE)
 endif
 	@echo "[OK] All services deployed"
 
@@ -332,6 +339,9 @@ ifeq ($(LIGHTWEIGHT),1)
 else
 	-helm uninstall dbrep-oracle -n $(NAMESPACE)
 endif
+	-helm uninstall dbrep-mysql -n $(NAMESPACE)
+	-helm uninstall dbrep-mssql -n $(NAMESPACE)
+	-kubectl delete -f $(ROOT_DIR)/helm-chart/minio/minio-dev.yaml -n $(NAMESPACE)
 	-helm uninstall dbrep-mariadb -n $(NAMESPACE)
 	-helm uninstall dbrep-kafka-connect-ui -n $(NAMESPACE)
 	-helm uninstall dbrep-kafka-connect -n $(NAMESPACE)

@@ -1,0 +1,8 @@
+apiVersion: v2
+name: dbrep-mariadb
+description: A wrapper chart for MariaDB
+version: 0.1.0
+dependencies:
+  - name: mariadb
+    version: 11.3.3
+    repository: "file://../../helm-chart/mariadb"

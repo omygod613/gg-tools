@@ -1,0 +1,8 @@
+apiVersion: v2
+name: dbrep-kafka-connect-ui
+description: A wrapper chart for Kafka Connect UI
+version: 0.1.0
+dependencies:
+  - name: kafka-connect-ui
+    version: 0.1.0
+    repository: "file://../../helm-chart/kafka-connect-ui"
