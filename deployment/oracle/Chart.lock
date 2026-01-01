@@ -1,6 +1,0 @@
-dependencies:
-- name: oracle-db
-  repository: file://../../helm-chart/oracle
-  version: 1.0.0
-digest: sha256:9321581c4db77524710c0bb3ab13480b61c2b0d962afa480e1a79b8638362804
-generated: "2025-12-31T17:18:07.963807061+08:00"
