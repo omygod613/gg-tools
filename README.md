@@ -98,7 +98,7 @@ make cluster-delete
 ## Project Structure
 
 ```
-gg-tools/
+kafka-dbsync/
 ├── deployment/          # Helm wrapper charts for deployment
 │   ├── kafka/          # Kafka cluster (Bitnami)
 │   ├── kafka-connect/  # Confluent Kafka Connect
