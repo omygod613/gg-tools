@@ -1,0 +1,8 @@
+apiVersion: v2
+name: dbrep-kafka
+description: A wrapper chart for Bitnami Kafka
+version: 0.1.0
+dependencies:
+  - name: kafka
+    version: 32.4.3
+    repository: "file://../../helm-chart/kafka"

@@ -1,0 +1,8 @@
+apiVersion: v2
+name: dbrep-kafka-connect
+description: A wrapper chart for Confluent Kafka Connect
+version: 0.1.0
+dependencies:
+  - name: cp-kafka-connect
+    version: 0.1.0
+    repository: "file://../../helm-chart/kafka-connect"

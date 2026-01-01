@@ -1,0 +1,6 @@
+dependencies:
+- name: kafka-connect-ui
+  repository: file://../../helm-chart/kafka-connect-ui
+  version: 0.1.0
+digest: sha256:161afbd5541a8734407d094019b940a84be5ca26e597b6195924ba7f91e01962
+generated: "2025-12-31T17:18:07.703133255+08:00"

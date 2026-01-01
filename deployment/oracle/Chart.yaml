@@ -1,0 +1,8 @@
+apiVersion: v2
+name: dbrep-oracle
+description: A wrapper chart for Oracle Database
+version: 0.1.0
+dependencies:
+  - name: oracle-db
+    version: 1.0.0
+    repository: "file://../../helm-chart/oracle"

@@ -1,0 +1,8 @@
+apiVersion: v2
+name: dbrep-mssql
+description: A wrapper chart for MSSQL
+version: 0.1.0
+dependencies:
+  - name: mssql-latest
+    version: 0.1.1
+    repository: "file://../../helm-chart/mssql"

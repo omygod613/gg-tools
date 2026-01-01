@@ -1,11 +1,12 @@
 #!/bin/bash
 
-BASE_DIR=$(dirname "$0")
+kubectl config set-context --current --namespace dev
 
-# bash deployment/mysql/delete.sh
-bash deployment/mssql/delete.sh
-bash deployment/kafka-connect/delete.sh
-bash deployment/kafka-connect-ui/delete.sh
-bash deployment/kafka/delete.sh
-bash deployment/mariadb/delete.sh
-# bash deployment/schema-registry/delete.sh
+helm uninstall dbrep-kafka -n dev
+helm uninstall dbrep-kafka-connect -n dev
+helm uninstall dbrep-kafka-connect-ui -n dev
+helm uninstall dbrep-mariadb -n dev
+kubectl delete -f deployment/minio/minio-dev.yaml -n dev
+helm uninstall dbrep-mssql -n dev
+helm uninstall dbrep-mysql -n dev
+helm uninstall dbrep-oracle -n dev

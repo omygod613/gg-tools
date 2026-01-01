@@ -1,0 +1,6 @@
+dependencies:
+- name: mariadb
+  repository: file://../../helm-chart/mariadb
+  version: 11.3.3
+digest: sha256:1ad116a50783763e0b9ca7838e29fe3b4c36a2cb4544c5cd82ecafc7662eeb68
+generated: "2025-12-31T17:18:07.765387456+08:00"
