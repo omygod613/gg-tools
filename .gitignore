@@ -5,6 +5,7 @@ Chart.lock
 # IDE
 .idea/
 .vscode/
+.claude/
 *.swp
 *.swo
 *~

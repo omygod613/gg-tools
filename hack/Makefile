@@ -12,7 +12,7 @@ MARIADB_HOST ?= dbrep-mariadb.dev.svc.cluster.local
 MARIADB_USER ?= root
 MARIADB_PASS ?= root_password
 NAMESPACE ?= dev
-CLUSTER_NAME ?= gg-tools
+CLUSTER_NAME ?= kafka-dbsync
 HACK_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 ROOT_DIR := $(HACK_DIR)/..
 
