@@ -2,7 +2,7 @@
 
 ## Overview
 
-GG-Tools is a Kubernetes-native CDC (Change Data Capture) toolkit that enables real-time database replication using Apache Kafka, Debezium, and JDBC connectors. The architecture follows cloud-native principles with containerized workloads, declarative configurations, and infrastructure-as-code.
+Kafka-DBSync is a Kubernetes-native CDC (Change Data Capture) toolkit that enables real-time database replication using Apache Kafka, Debezium, and JDBC connectors. The architecture follows cloud-native principles with containerized workloads, declarative configurations, and infrastructure-as-code.
 
 ## High-Level Architecture
 
