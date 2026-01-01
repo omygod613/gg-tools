@@ -1,6 +1,0 @@
-dependencies:
-- name: kafka
-  repository: file://../../helm-chart/kafka
-  version: 32.4.3
-digest: sha256:eff16380743b654d592040fcdd52eb6d51ed4f44cc185044eb913505802c1141
-generated: "2025-12-31T17:18:00.504686032+08:00"

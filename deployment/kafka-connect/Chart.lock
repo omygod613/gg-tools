@@ -1,6 +1,0 @@
-dependencies:
-- name: cp-kafka-connect
-  repository: file://../../helm-chart/kafka-connect
-  version: 0.1.0
-digest: sha256:843a3b8a7b87a8daa45c5f6e783abc8fee5bbf7d6716a52b70b927091570f0f8
-generated: "2025-12-31T17:18:07.654394816+08:00"
