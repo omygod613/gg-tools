@@ -4,11 +4,11 @@ A comprehensive Kubernetes-based toolkit for Change Data Capture (CDC) and datab
 
 ## Overview
 
-Kafka-DBSync provides infrastructure and automation for building multi-database CDC pipelines that stream changes from source databases to target databases in real-time. It supports Oracle, MySQL, MariaDB, and MSSQL with flexible deployment options for development and testing.
+Kafka-DBSync provides infrastructure and automation for building multi-database CDC pipelines that stream changes from source databases to target databases in real-time. It supports Oracle, MariaDB, and MSSQL with flexible deployment options for development and testing.
 
 ### Key Features
 
-- **Multi-Database CDC**: Oracle, MySQL, MariaDB, MSSQL support
+- **Multi-Database CDC**: Oracle, MariaDB, MSSQL support
 - **Real-time Streaming**: Kafka 4.0 with KRaft mode (no ZooKeeper)
 - **Debezium Integration**: Log-based CDC connectors
 - **JDBC Sink Connectors**: Write to any JDBC-compatible database
@@ -23,7 +23,7 @@ Kafka-DBSync provides infrastructure and automation for building multi-database 
 │   Source    │────▶│    Kafka     │────▶│   Target    │
 │  Database   │     │   Cluster    │     │  Database   │
 │ (Oracle/    │     │              │     │ (MariaDB/   │
-│  MySQL/etc) │     │ Debezium CDC │     │  MySQL/etc) │
+│  MSSQL)     │     │ Debezium CDC │     │  MSSQL)     │
 └─────────────┘     └──────────────┘     └─────────────┘
 ```
 
@@ -104,8 +104,8 @@ kafka-dbsync/
 │   ├── kafka-connect/  # Confluent Kafka Connect
 │   ├── oracle/         # Oracle Database (XE/EE)
 │   ├── mariadb/        # MariaDB
-│   ├── mysql/          # MySQL
-│   └── mssql/          # Microsoft SQL Server
+│   ├── mssql/          # Microsoft SQL Server
+│   └── curl-client/    # Curl client for verification
 ├── helm-chart/         # Source Helm charts
 │   └── */              # Actual chart implementations
 ├── hack/               # E2E testing and development utilities
@@ -191,21 +191,18 @@ make all LIGHTWEIGHT=0
 ### Source Connectors (Debezium)
 
 - **Oracle**: LogMiner-based CDC
-- **MySQL**: Binlog-based CDC
 - **MSSQL**: SQL Server CDC
 
 ### Sink Connectors (JDBC)
 
 - **MariaDB**: JDBC sink with upsert
-- **MySQL**: JDBC sink with upsert
 - Any JDBC-compatible database
 
 ### Example Pipelines
 
 1. **Oracle → Kafka → MariaDB** (E2E tested)
-2. **MySQL → Kafka → MariaDB**
-3. **MSSQL → Kafka → MySQL**
-4. Custom combinations via connector configs in `hack/`
+2. **MSSQL → Kafka → MariaDB**
+3. Custom combinations via connector configs in `hack/`
 
 ## Documentation
 

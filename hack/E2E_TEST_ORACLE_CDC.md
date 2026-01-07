@@ -109,7 +109,7 @@ COMMIT;
 Connect to MariaDB:
 
 ```bash
-kubectl exec -it dbrep-mariadb-0 -- mysql -h dbrep-mariadb.devns3.svc.cluster.local -uroot -proot_password
+kubectl exec -it dbrep-mariadb-0 -- mysql -h dbrep-mariadb.dev.svc.cluster.local -uroot -proot_password
 ```
 
 Create the target database:
@@ -155,7 +155,7 @@ curl http://localhost:8083/connectors/sink_cdc_oracle_to_mariadb/status | jq
 Check MariaDB for replicated data:
 
 ```bash
-kubectl exec -it dbrep-mariadb-0 -- mysql -h dbrep-mariadb.devns3.svc.cluster.local -uroot -proot_password -e "SELECT * FROM target_database.target_orders;"
+kubectl exec -it dbrep-mariadb-0 -- mysql -h dbrep-mariadb.dev.svc.cluster.local -uroot -proot_password -e "SELECT * FROM target_database.target_orders;"
 ```
 
 Expected output: 4 rows matching Oracle source data.
@@ -188,7 +188,7 @@ COMMIT;
 ### Verify Changes in MariaDB
 
 ```bash
-kubectl exec -it dbrep-mariadb-0 -- mysql -h dbrep-mariadb.devns3.svc.cluster.local -uroot -proot_password -e "SELECT * FROM target_database.target_orders ORDER BY ID;"
+kubectl exec -it dbrep-mariadb-0 -- mysql -h dbrep-mariadb.dev.svc.cluster.local -uroot -proot_password -e "SELECT * FROM target_database.target_orders ORDER BY ID;"
 ```
 
 Expected:

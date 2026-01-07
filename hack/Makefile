@@ -127,40 +127,46 @@ setup-mariadb:
 # Register source connector
 register-source:
 	@echo "[INFO] Registering Debezium Oracle source connector..."
-	@kubectl cp $(ORACLE_CONNECTOR) dbrep-kafka-controller-0:/tmp/source-connector.json -n $(NAMESPACE)
-	@kubectl exec dbrep-kafka-controller-0 -n $(NAMESPACE) -- curl -s --max-time 120 -X POST \
+	@POD=$$(kubectl get pod -l app.kubernetes.io/name=curl-client -n $(NAMESPACE) -o jsonpath='{.items[0].metadata.name}') && \
+	kubectl cp $(ORACLE_CONNECTOR) $$POD:/tmp/source-connector.json -n $(NAMESPACE) && \
+	kubectl exec $$POD -n $(NAMESPACE) -- curl -s --max-time 10 -X POST \
 		http://dbrep-kafka-connect-cp-kafka-connect:8083/connectors \
 		-H "Content-Type: application/json" \
-		-d @/tmp/source-connector.json | jq . || true
+		-d @/tmp/source-connector.json || echo "[ERROR] Failed to register source connector"
 	@echo "[INFO] Waiting 30s for initial snapshot..."
 	@sleep 30
 	@echo "[INFO] Verifying source connector..."
-	@kubectl exec dbrep-kafka-controller-0 -n $(NAMESPACE) -- curl -s \
-		http://dbrep-kafka-connect-cp-kafka-connect:8083/connectors/source_cdc_oracle_demo/status | jq -r '.tasks[0].state' || echo "UNKNOWN"
+	@POD=$$(kubectl get pod -l app.kubernetes.io/name=curl-client -n $(NAMESPACE) -o jsonpath='{.items[0].metadata.name}') && \
+	kubectl exec $$POD -n $(NAMESPACE) -- curl -s \
+		http://dbrep-kafka-connect-cp-kafka-connect:8083/connectors/source_cdc_oracle_demo/status || echo "[ERROR] Connector not found"
 
 # Register sink connector
 register-sink:
 	@echo "[INFO] Registering JDBC sink connector..."
-	@kubectl cp $(HACK_DIR)/sink-jdbc/cdc_oracle_mariadb-demo.json dbrep-kafka-controller-0:/tmp/sink-connector.json -n $(NAMESPACE)
-	@kubectl exec dbrep-kafka-controller-0 -n $(NAMESPACE) -- curl -s --max-time 120 -X POST \
+	@POD=$$(kubectl get pod -l app.kubernetes.io/name=curl-client -n $(NAMESPACE) -o jsonpath='{.items[0].metadata.name}') && \
+	kubectl cp $(HACK_DIR)/sink-jdbc/cdc_oracle_mariadb-demo.json $$POD:/tmp/sink-connector.json -n $(NAMESPACE) && \
+	kubectl exec $$POD -n $(NAMESPACE) -- curl -s --max-time 10 -X POST \
 		http://dbrep-kafka-connect-cp-kafka-connect:8083/connectors \
 		-H "Content-Type: application/json" \
-		-d @/tmp/sink-connector.json | jq . || true
+		-d @/tmp/sink-connector.json || echo "[ERROR] Failed to register sink connector"
 	@echo "[INFO] Waiting 10s for sync..."
 	@sleep 10
 	@echo "[INFO] Verifying sink connector..."
-	@kubectl exec dbrep-kafka-controller-0 -n $(NAMESPACE) -- curl -s \
-		http://dbrep-kafka-connect-cp-kafka-connect:8083/connectors/sink_cdc_oracle_to_mariadb/status | jq -r '.tasks[0].state' || echo "UNKNOWN"
+	@POD=$$(kubectl get pod -l app.kubernetes.io/name=curl-client -n $(NAMESPACE) -o jsonpath='{.items[0].metadata.name}') && \
+	kubectl exec $$POD -n $(NAMESPACE) -- curl -s \
+		http://dbrep-kafka-connect-cp-kafka-connect:8083/connectors/sink_cdc_oracle_to_mariadb/status || echo "[ERROR] Connector not found"
 
 # Check connector status
 status:
 	@echo "[INFO] Connector Status:"
 	@echo "--- Source (source_cdc_oracle_demo) ---"
-	@kubectl exec dbrep-kafka-controller-0 -n $(NAMESPACE) -- curl -s \
-		http://dbrep-kafka-connect-cp-kafka-connect:8083/connectors/source_cdc_oracle_demo/status 2>/dev/null | jq . || echo "NOT FOUND"
+	@POD=$$(kubectl get pod -l app.kubernetes.io/name=curl-client -n $(NAMESPACE) -o jsonpath='{.items[0].metadata.name}') && \
+	kubectl exec $$POD -n $(NAMESPACE) -- curl -s \
+		http://dbrep-kafka-connect-cp-kafka-connect:8083/connectors/source_cdc_oracle_demo/status 2>/dev/null || echo "NOT FOUND"
 	@echo "--- Sink (sink_cdc_oracle_to_mariadb) ---"
-	@kubectl exec dbrep-kafka-controller-0 -n $(NAMESPACE) -- curl -s \
-		http://dbrep-kafka-connect-cp-kafka-connect:8083/connectors/sink_cdc_oracle_to_mariadb/status 2>/dev/null | jq . || echo "NOT FOUND"
+	@POD=$$(kubectl get pod -l app.kubernetes.io/name=curl-client -n $(NAMESPACE) -o jsonpath='{.items[0].metadata.name}') && \
+	kubectl exec $$POD -n $(NAMESPACE) -- curl -s \
+		http://dbrep-kafka-connect-cp-kafka-connect:8083/connectors/sink_cdc_oracle_to_mariadb/status 2>/dev/null || echo "NOT FOUND"
 
 # Verify data in MariaDB
 verify:
@@ -319,9 +325,8 @@ deploy: check-tools
 	-kubectl delete -f $(ROOT_DIR)/helm-chart/minio/minio-dev.yaml -n $(NAMESPACE) || true
 	kubectl apply -f $(ROOT_DIR)/helm-chart/minio/minio-dev.yaml -n $(NAMESPACE)
 	@echo "[INFO] Deploying MSSQL..."
+	cd $(ROOT_DIR)/deployment/mssql && helm dependency build
 	cd $(ROOT_DIR) && helm upgrade --install dbrep-mssql deployment/mssql -f deployment/mssql/values.yaml -n $(NAMESPACE)
-	@echo "[INFO] Deploying MySQL..."
-	cd $(ROOT_DIR) && helm upgrade --install dbrep-mysql deployment/mysql -f deployment/mysql/values.yaml -n $(NAMESPACE)
 ifeq ($(LIGHTWEIGHT),1)
 	@echo "[INFO] Deploying Oracle XE 21c (lightweight, ~2-3min startup)..."
 	kubectl apply -f $(ROOT_DIR)/deployment/oracle/oracle-free.yaml -n $(NAMESPACE)
@@ -329,6 +334,9 @@ else
 	@echo "[INFO] Deploying Oracle EE 19c (full, ~10min startup)..."
 	cd $(ROOT_DIR) && helm upgrade --install dbrep-oracle deployment/oracle -f deployment/oracle/values.yaml -n $(NAMESPACE)
 endif
+	@echo "[INFO] Deploying Curl Client..."
+	cd $(ROOT_DIR)/deployment/curl-client && helm dependency build
+	cd $(ROOT_DIR) && helm upgrade --install dbrep-curl-client deployment/curl-client -f deployment/curl-client/values.yaml -n $(NAMESPACE)
 	@echo "[OK] All services deployed"
 
 # Delete all services
@@ -339,13 +347,13 @@ ifeq ($(LIGHTWEIGHT),1)
 else
 	-helm uninstall dbrep-oracle -n $(NAMESPACE)
 endif
-	-helm uninstall dbrep-mysql -n $(NAMESPACE)
 	-helm uninstall dbrep-mssql -n $(NAMESPACE)
 	-kubectl delete -f $(ROOT_DIR)/helm-chart/minio/minio-dev.yaml -n $(NAMESPACE)
 	-helm uninstall dbrep-mariadb -n $(NAMESPACE)
 	-helm uninstall dbrep-kafka-connect-ui -n $(NAMESPACE)
 	-helm uninstall dbrep-kafka-connect -n $(NAMESPACE)
 	-helm uninstall dbrep-kafka -n $(NAMESPACE)
+	-helm uninstall dbrep-curl-client -n $(NAMESPACE)
 	@echo "[INFO] Deleting PVCs..."
 	-kubectl delete pvc --all -n $(NAMESPACE)
 	@echo "[OK] All services and PVCs deleted"
@@ -363,6 +371,8 @@ endif
 	kubectl wait --for=condition=ready pod -l app=cp-kafka-connect --timeout=300s -n $(NAMESPACE) || true
 	@echo "[INFO] Waiting for MariaDB..."
 	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=mariadb --timeout=300s -n $(NAMESPACE) || true
+	@echo "[INFO] Waiting for Curl Client..."
+	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=curl-client --timeout=60s -n $(NAMESPACE) || true
 	@echo "[INFO] Waiting for Oracle..."
 ifeq ($(LIGHTWEIGHT),1)
 	kubectl wait --for=condition=ready pod -l app=oracle-db --timeout=300s -n $(NAMESPACE) || true

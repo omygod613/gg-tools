@@ -1,0 +1,17 @@
+curl-client:
+  replicaCount: 1
+
+  image:
+    repository: curlimages/curl
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  command: ["sleep", "infinity"]
+
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi

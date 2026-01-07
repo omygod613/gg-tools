@@ -1,0 +1,9 @@
+apiVersion: v2
+name: curl-client
+description: A simple curl client for testing and verification
+version: 0.1.0
+appVersion: "latest"
+keywords:
+  - curl
+  - client
+  - testing

@@ -13,8 +13,8 @@ Kafka-DBSync is a Kubernetes-native CDC (Change Data Capture) toolkit that enabl
 │  ┌──────────────┐     ┌────────────────┐     ┌──────────────┐ │
 │  │   Source DB  │────▶│  Kafka Cluster │────▶│  Target DB   │ │
 │  │              │     │                │     │              │ │
-│  │ Oracle/MySQL │     │  - Brokers (3) │     │ MariaDB/MySQL│ │
-│  │ MariaDB/MSSQL│     │  - Topics      │     │              │ │
+│  │ Oracle/MSSQL │     │  - Brokers (3) │     │ MariaDB/MSSQL│ │
+│  │ MariaDB      │     │  - Topics      │     │              │ │
 │  └──────────────┘     │  - KRaft Mode  │     └──────────────┘ │
 │         │             └────────────────┘            ▲          │
 │         │                      ▲                    │          │
@@ -48,7 +48,6 @@ DELETE FROM DEMO.SOURCE_ORDERS WHERE id=3;
 ### 2. Debezium Source Connector
 
 - **LogMiner (Oracle)**: Reads from redo/archive logs
-- **Binlog (MySQL/MariaDB)**: Reads from binary logs
 - **CDC (MSSQL)**: Reads from SQL Server CDC tables
 
 Produces Kafka messages:
@@ -173,7 +172,7 @@ This installs the base `helm-chart/kafka` chart with customizations from the wra
 
 - **Distribution**: Confluent Platform
 - **Connectors**:
-  - Debezium Oracle/MySQL/MSSQL (source)
+  - Debezium Oracle/MSSQL (source)
   - Confluent JDBC Sink (sink)
 - **REST API**: Port 8083
 - **Deployment**: Single replica (can be scaled)
@@ -198,13 +197,12 @@ curl -X POST http://localhost:8083/connectors \
 |----------|-------|---------|------|
 | Oracle EE | Enterprise Edition | 19c | Full (LIGHTWEIGHT=0) |
 | Oracle XE | gvenzl/oracle-xe | 21c | Fast (LIGHTWEIGHT=1) |
-| MySQL | Bitnami MySQL | 8.0 | - |
 | MariaDB | Bitnami MariaDB | 11.x | - |
 | MSSQL | Microsoft SQL Server | 2019 | - |
 
 ### Target Databases
 
-Typically MariaDB or MySQL, but any JDBC-compatible database is supported.
+Typically MariaDB or MSSQL, but any JDBC-compatible database is supported.
 
 ## Deployment Modes
 
@@ -266,7 +264,7 @@ Exposes:
 - **Kafka Topics**: 7 days (configurable)
 - **Database Logs**: Varies by database type
   - Oracle: Archive logs (7 days recommended)
-  - MySQL/MariaDB: Binlog retention (7 days)
+  - MariaDB: Binlog retention (7 days)
 
 ## Security Considerations
 

@@ -1,0 +1,8 @@
+apiVersion: v2
+name: dbrep-curl-client
+description: A wrapper chart for curl client
+version: 0.1.0
+dependencies:
+  - name: curl-client
+    version: 0.1.0
+    repository: "file://../../helm-chart/curl-client"

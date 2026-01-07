@@ -16,7 +16,7 @@
   "key.converter.schemas.enable": "true",
   "connection.user": "root",
   "value.converter.schemas.enable": "true",
-  "connection.url": "jdbc:mariadb://dbrep-mariadb.devns3.svc.cluster.local:3306/target_database"
+  "connection.url": "jdbc:mariadb://dbrep-mariadb.dev.svc.cluster.local:3306/target_database"
 }
 
 //  timestamp+incrementing
@@ -41,5 +41,5 @@
   "key.converter.schemas.enable": "true",
   "connection.user": "root",
   "value.converter.schemas.enable": "true",
-  "connection.url": "jdbc:mariadb://dbrep-mariadb.devns3.svc.cluster.local:3306/source_database"
+  "connection.url": "jdbc:mariadb://dbrep-mariadb.dev.svc.cluster.local:3306/source_database"
 }

@@ -10,7 +10,7 @@ metadata:
   labels:
     app: minio
   name: minio
-  namespace: devns3 # Change this value to match the namespace metadata.name
+  namespace: dev # Change this value to match the namespace metadata.name
 spec:
   containers:
   - name: minio
