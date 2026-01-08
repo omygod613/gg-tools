@@ -1,10 +1,11 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ include "mssql-latest.fullname" . }}
   labels:
     {{- include "mssql-latest.labels" . | nindent 4 }}
 spec:
+  serviceName: {{ include "mssql-latest.fullname" . }}
   replicas: {{ .Values.replicas}}
   selector:
     matchLabels:
@@ -55,18 +56,39 @@ spec:
            - name: mssql-config-volume
              mountPath: /var/opt/config
       volumes:
-       - name: mssqldb
-         persistentVolumeClaim:
-          claimName: mssql-data
-       - name: mssqluserdb
-         persistentVolumeClaim:
-          claimName: mssql-userdb
-       - name: mssqllog
-         persistentVolumeClaim:
-          claimName: mssql-log
-       - name: mssqltemp
-         persistentVolumeClaim:
-          claimName: mssql-temp          
        - name: mssql-config-volume
          configMap:
           name: mssql-config
+  volumeClaimTemplates:
+  - metadata:
+      name: mssqldb
+    spec:
+      accessModes:
+      - {{ .Values.pvc.mssqldataaccessMode | quote}}
+      resources:
+        requests:
+          storage: {{ .Values.pvc.mssqldbsize}}
+  - metadata:
+      name: mssqluserdb
+    spec:
+      accessModes:
+      - {{ .Values.pvc.userdbaccessMode | quote}}
+      resources:
+        requests:
+          storage: {{ .Values.pvc.userdbsize}}
+  - metadata:
+      name: mssqllog
+    spec:
+      accessModes:
+      - {{ .Values.pvc.userlogaccessMode | quote}}
+      resources:
+        requests:
+          storage: {{ .Values.pvc.userlogsize}}
+  - metadata:
+      name: mssqltemp
+    spec:
+      accessModes:
+      - {{ .Values.pvc.tempdbaccessMode | quote}}
+      resources:
+        requests:
+          storage: {{ .Values.pvc.tempsize}}
