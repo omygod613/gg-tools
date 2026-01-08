@@ -1,4 +1,4 @@
-# Lightweight Oracle XE 21c deployment (compatible with Debezium 2.1.x)
+# Lightweight Oracle XE 21c StatefulSet deployment (compatible with Debezium 2.1.x)
 # Usage: kubectl apply -f oracle-free.yaml -n dev
 # Note: Oracle 23ai not supported by Debezium 2.1.x, use XE 21c instead
 ---
@@ -15,7 +15,7 @@ kind: Service
 metadata:
   name: dbrep-oracle-oracle-db
 spec:
-  type: ClusterIP
+  clusterIP: None
   ports:
     - name: oracle
       port: 1521
@@ -24,10 +24,11 @@ spec:
     app: oracle-db
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: dbrep-oracle-oracle-db
 spec:
+  serviceName: dbrep-oracle-oracle-db
   replicas: 1
   selector:
     matchLabels:
@@ -63,3 +64,15 @@ spec:
             limits:
               memory: "2Gi"
               cpu: "2000m"
+          volumeMounts:
+            - name: oracle-data
+              mountPath: /opt/oracle/oradata
+  volumeClaimTemplates:
+  - metadata:
+      name: oracle-data
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi

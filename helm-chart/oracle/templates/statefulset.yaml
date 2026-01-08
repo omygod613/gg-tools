@@ -4,17 +4,13 @@
 #
 
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ template "fullname" . }}
 {{- include "oracle-db-labels" . |indent 2}}
 spec:
+  serviceName: {{ template "fullname" . }}
   replicas: {{ default 1 .Values.replicas }}
-  strategy:
-    rollingUpdate:
-      maxSurge: 100
-      maxUnavailable: 100
-    type: RollingUpdate
   selector:
     matchLabels:
       app: {{ template "fullname" . }}
@@ -65,10 +61,16 @@ spec:
               name: datamount
           {{- end }}
 {{- include "oracle-db-env" . | indent 10 }}
-      {{- if .Values.persistence }}
-      volumes:
-        - name: datamount
-          persistentVolumeClaim:
-            claimName: {{ template "fullname" . }}
-      {{- end }}
-
+{{- if .Values.persistence }}
+  volumeClaimTemplates:
+  - metadata:
+      name: datamount
+{{- include "oracle-db-labels" . | indent 6 }}
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: {{ .Values.persistence.size | quote }}
+      storageClassName: {{ .Values.persistence.storageClass | quote }}
+{{- end }}
