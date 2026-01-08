@@ -17,7 +17,7 @@
   "key.converter.schemas.enable": "true",
   "connection.user": "super",
   "value.converter.schemas.enable": "true",
-  "connection.url": "jdbc:oracle:thin:@//dbrep-oracle-oracle-db.devns3.svc.cluster.local:1521/ORCLCDB"
+  "connection.url": "jdbc:oracle:thin:@//dbrep-oracle-oracle-db.dev.svc.cluster.local:1521/ORCLCDB"
 }
 
 //  timestamp+incrementing
@@ -37,5 +37,5 @@
   "transforms.unwrap.drop.tombstones": "false",
   "poll.interval.ms": "5000",
   "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
-  "connection.url": "jdbc:oracle:thin:@//dbrep-oracle-oracle-db.devns3.svc.cluster.local:1521/ORCLCDB"
+  "connection.url": "jdbc:oracle:thin:@//dbrep-oracle-oracle-db.dev.svc.cluster.local:1521/ORCLCDB"
 }

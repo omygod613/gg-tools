@@ -1,5 +1,5 @@
 # Lightweight Oracle XE 21c deployment (compatible with Debezium 2.1.x)
-# Usage: kubectl apply -f oracle-free.yaml -n devns3
+# Usage: kubectl apply -f oracle-free.yaml -n dev
 # Note: Oracle 23ai not supported by Debezium 2.1.x, use XE 21c instead
 ---
 apiVersion: v1

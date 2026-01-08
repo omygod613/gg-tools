@@ -1,8 +1,0 @@
-apiVersion: v2
-name: dbrep-mysql
-description: A wrapper chart for MySQL
-version: 0.1.0
-dependencies:
-  - name: mysql
-    version: 9.4.1
-    repository: "file://../../helm-chart/mysql"
