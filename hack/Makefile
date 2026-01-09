@@ -2,8 +2,9 @@
 # Usage: make e2e
 
 .PHONY: help e2e setup setup-oracle setup-mariadb port-forward register-source register-sink \
-        verify test-insert test-update test-delete clean status logs reset topics topic-purge \
-        cluster cluster-delete deploy deploy-delete tools check-tools
+	verify test-insert test-update test-delete clean status logs reset topics topic-purge \
+	cluster cluster-delete deploy deploy-delete tools check-tools \
+	build-debezium-3.4-image deploy-debezium-3.4 all-debezium-3.4
 
 # Configuration
 KAFKA_CONNECT_URL ?= http://localhost:8083
@@ -16,20 +17,24 @@ CLUSTER_NAME ?= kafka-dbsync
 HACK_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 ROOT_DIR := $(HACK_DIR)/..
 
+# Kafka Connect image configuration
+KAFKA_CONNECT_IMAGE ?= omygod613/cp-kafka-connect
+KAFKA_CONNECT_IMAGE_TAG ?= 7.6.1-20251217
+
 # Oracle configuration - set LIGHTWEIGHT=1 for Oracle XE 21c (gvenzl image)
 LIGHTWEIGHT ?= 1
 ifeq ($(LIGHTWEIGHT),1)
-  ORACLE_POD ?= dbrep-oracle-oracle-db
-  ORACLE_SID ?= XE
-  ORACLE_PDB ?= XEPDB1
-  ORACLE_SQL_SETUP := $(HACK_DIR)/sql/oracle-xe-setup.sql
-  ORACLE_CONNECTOR := $(HACK_DIR)/source-debezium/oracle-free-demo.json
+	ORACLE_POD ?= dbrep-oracle-oracle-db
+	ORACLE_SID ?= XE
+	ORACLE_PDB ?= XEPDB1
+	ORACLE_SQL_SETUP := $(HACK_DIR)/sql/oracle-xe-setup.sql
+	ORACLE_CONNECTOR := $(HACK_DIR)/source-debezium/oracle-free-demo.json
 else
-  ORACLE_POD ?= dbrep-oracle-oracle-db-0
-  ORACLE_SID ?= ORCLCDB
-  ORACLE_PDB ?= ORCLPDB1
-  ORACLE_SQL_SETUP := $(HACK_DIR)/sql/oracle-pdb-setup.sql
-  ORACLE_CONNECTOR := $(HACK_DIR)/source-debezium/oracle-demo.json
+	ORACLE_POD ?= dbrep-oracle-oracle-db-0
+	ORACLE_SID ?= ORCLCDB
+	ORACLE_PDB ?= ORCLPDB1
+	ORACLE_SQL_SETUP := $(HACK_DIR)/sql/oracle-pdb-setup.sql
+	ORACLE_CONNECTOR := $(HACK_DIR)/source-debezium/oracle-demo.json
 endif
 
 help:
@@ -37,6 +42,7 @@ help:
 	@echo ""
 	@echo "Quick Start (from scratch):"
 	@echo "  make all              Full setup: cluster + deploy + wait + e2e"
+	@echo "  make all-debezium-3.4 Full setup with Debezium 3.4 image"
 	@echo ""
 	@echo "Oracle Mode (LIGHTWEIGHT=$(LIGHTWEIGHT)):"
 	@echo "  LIGHTWEIGHT=1  Oracle XE 21c (~2-3min startup) [DEFAULT]"
@@ -48,6 +54,7 @@ help:
 	@echo "  make cluster          Create kind cluster"
 	@echo "  make cluster-delete   Delete kind cluster"
 	@echo "  make deploy           Deploy all services (Kafka, Oracle, MariaDB, etc.)"
+	@echo "  make deploy-debezium-3.4 Deploy all services with Debezium 3.4 image"
 	@echo "  make deploy-delete    Delete all services"
 	@echo "  make wait-ready       Wait for all pods to be ready"
 	@echo ""
@@ -88,8 +95,8 @@ test: test-insert test-update test-delete verify
 port-forward:
 	@echo "[INFO] Starting port forwarding..."
 	@kubectl port-forward svc/dbrep-kafka-connect-cp-kafka-connect 8083:8083 & \
-	 kubectl port-forward svc/dbrep-kafka-connect-ui 8000:8000 & \
-	 wait
+	kubectl port-forward svc/dbrep-kafka-connect-ui 8000:8000 & \
+	wait
 
 # Setup Oracle
 setup-oracle:
@@ -196,7 +203,7 @@ test-insert:
 	@echo "[INFO] Testing INSERT..."
 ifeq ($(LIGHTWEIGHT),1)
 	@POD=$$(kubectl get pods -n $(NAMESPACE) -l app=oracle-db -o jsonpath='{.items[0].metadata.name}') && \
-	printf "INSERT INTO DEMO.SOURCE_ORDERS(ID, ORDER_NO, CUSTOMER_NAME, AMOUNT, STATUS) VALUES(5, 'ORD-005', 'Eve', 3100.00, 'PENDING');\nCOMMIT;\nEXIT;\n" | kubectl exec -i $$POD -n $(NAMESPACE) -- sqlplus -S sys/oracle@localhost:1521/$(ORACLE_PDB) as sysdba
+	printf "INSERT INTO DEMO.SOURCE_ORDERS(ID, ORDER_NO, CUSTOMER_NAME, AMOUNT, STATUS) VALUES(5, 'ORD-005', 'Eve', 3100.00, 'PENDING');\nCOMMIT;\nEXIT;\n" | kubectl exec -i $$POD -n $(NAMESPACE) -- sqlplus -S sys/oracle@localhost:1521/$(ORACLE_SID) as sysdba
 else
 	@echo "INSERT INTO DEMO.SOURCE_ORDERS(ID, ORDER_NO, CUSTOMER_NAME, AMOUNT, STATUS) VALUES(5, 'ORD-005', 'Eve', 3100.00, 'PENDING'); COMMIT; EXIT;" | kubectl exec -i $(ORACLE_POD) -n $(NAMESPACE) -- sqlplus -S sys/oracle@localhost:1521/$(ORACLE_PDB) as sysdba
 endif
@@ -207,7 +214,7 @@ test-update:
 	@echo "[INFO] Testing UPDATE..."
 ifeq ($(LIGHTWEIGHT),1)
 	@POD=$$(kubectl get pods -n $(NAMESPACE) -l app=oracle-db -o jsonpath='{.items[0].metadata.name}') && \
-	printf "UPDATE DEMO.SOURCE_ORDERS SET STATUS='COMPLETED', MODIFIED_AT=CURRENT_TIMESTAMP WHERE ID=1;\nCOMMIT;\nEXIT;\n" | kubectl exec -i $$POD -n $(NAMESPACE) -- sqlplus -S sys/oracle@localhost:1521/$(ORACLE_PDB) as sysdba
+	printf "UPDATE DEMO.SOURCE_ORDERS SET STATUS='COMPLETED', MODIFIED_AT=CURRENT_TIMESTAMP WHERE ID=1;\nCOMMIT;\nEXIT;\n" | kubectl exec -i $$POD -n $(NAMESPACE) -- sqlplus -S sys/oracle@localhost:1521/$(ORACLE_SID) as sysdba
 else
 	@echo "UPDATE DEMO.SOURCE_ORDERS SET STATUS='COMPLETED', MODIFIED_AT=CURRENT_TIMESTAMP WHERE ID=1; COMMIT; EXIT;" | kubectl exec -i $(ORACLE_POD) -n $(NAMESPACE) -- sqlplus -S sys/oracle@localhost:1521/$(ORACLE_PDB) as sysdba
 endif
@@ -266,10 +273,10 @@ clean:
 reset: clean
 	@echo "[INFO] Dropping tables..."
 ifeq ($(LIGHTWEIGHT),1)
-	-@POD=$$(kubectl get pods -n $(NAMESPACE) -l app=oracle-db -o jsonpath='{.items[0].metadata.name}') && \
+	@POD=$$(kubectl get pods -n $(NAMESPACE) -l app=oracle-db -o jsonpath='{.items[0].metadata.name}') && \
 	echo "ALTER SESSION SET CONTAINER=$(ORACLE_PDB); DROP TABLE DEMO.SOURCE_ORDERS; EXIT;" | kubectl exec -i $$POD -n $(NAMESPACE) -- sqlplus -S sys/oracle@localhost:1521/$(ORACLE_SID) as sysdba
 else
-	-@echo "DROP TABLE DEMO.SOURCE_ORDERS; EXIT;" | kubectl exec -i $(ORACLE_POD) -n $(NAMESPACE) -- sqlplus -S sys/oracle@localhost:1521/$(ORACLE_PDB) as sysdba
+	@echo "DROP TABLE DEMO.SOURCE_ORDERS; EXIT;" | kubectl exec -i $(ORACLE_POD) -n $(NAMESPACE) -- sqlplus -S sys/oracle@localhost:1521/$(ORACLE_PDB) as sysdba
 endif
 	-@kubectl exec $(MARIADB_POD) -n $(NAMESPACE) -- mysql -h $(MARIADB_HOST) -u$(MARIADB_USER) -p$(MARIADB_PASS) -e "DROP TABLE IF EXISTS target_database.target_orders;"
 	@echo "[OK] Reset completed"
@@ -281,6 +288,20 @@ endif
 # Full setup from scratch
 all: cluster deploy wait-ready e2e
 	@echo "[OK] Full E2E pipeline completed!"
+
+# Full setup with Debezium 3.4 image
+all-debezium-3.4: cluster deploy-debezium-3.4 wait-ready e2e
+	@echo "[OK] Full E2E pipeline with Debezium 3.4 completed!"
+
+# Build Debezium 3.4 Kafka Connect image
+build-debezium-3.4-image:
+	@echo "[INFO] Building Kafka Connect image with Debezium 3.4..."
+docker build -t kafka-dbsync/cp-kafka-connect-debezium:3.4.0 -f deployment/kafka-connect/docker/Dockerfile.debezium-3.4 deployment/kafka-connect/docker
+
+# Deploy all services with Debezium 3.4 image
+deploy-debezium-3.4: build-debezium-3.4-image
+	@$(MAKE) -f $(HACK_DIR)/Makefile deploy KAFKA_CONNECT_IMAGE=kafka-dbsync/cp-kafka-connect-debezium KAFKA_CONNECT_IMAGE_TAG=3.4.0
+
 
 # Check if tools are installed
 check-tools:
@@ -296,25 +317,25 @@ tools:
 		curl -sLO "https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl" && \
 		chmod +x kubectl && \
 		sudo mv kubectl /usr/local/bin/; \
-	else \
-		echo "kubectl already installed"; \
+	else 
+		echo "kubectl already installed"; 
 	fi
 	@echo "[INFO] Installing helm..."
-	@if ! command -v helm >/dev/null 2>&1; then \
+	@if ! command -v helm >/dev/null 2>&1; then 
 		curl -sLo helm.tar.gz "https://get.helm.sh/helm-v3.13.0-linux-amd64.tar.gz" && \
 		tar -zxf helm.tar.gz linux-amd64/helm --strip-components 1 && \
 		sudo mv helm /usr/local/bin/ && \
 		rm helm.tar.gz; \
-	else \
-		echo "helm already installed"; \
+	else 
+		echo "helm already installed"; 
 	fi
 	@echo "[INFO] Installing kind..."
-	@if ! command -v kind >/dev/null 2>&1; then \
+	@if ! command -v kind >/dev/null 2>&1; then 
 		curl -sLo kind "https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64" && \
 		chmod +x kind && \
-		sudo mv kind /usr/local/bin/; \
-	else \
-		echo "kind already installed"; \
+		sudo mv kind /usr/local/bin/; 
+	else 
+		echo "kind already installed"; 
 	fi
 	@echo "[OK] Tools installed"
 
@@ -343,7 +364,11 @@ deploy: check-tools
 	@echo "[INFO] Deploying Kafka..."
 	cd $(ROOT_DIR) && helm upgrade --install dbrep-kafka deployment/kafka -f deployment/kafka/values-kraft.yaml -n $(NAMESPACE)
 	@echo "[INFO] Deploying Kafka Connect..."
-	cd $(ROOT_DIR) && helm upgrade --install dbrep-kafka-connect deployment/kafka-connect -f deployment/kafka-connect/values.yaml -n $(NAMESPACE)
+	cd $(ROOT_DIR) && helm upgrade --install dbrep-kafka-connect deployment/kafka-connect \
+		-f deployment/kafka-connect/values.yaml \
+		--set cp-kafka-connect.image=$(KAFKA_CONNECT_IMAGE) \
+		--set cp-kafka-connect.imageTag=$(KAFKA_CONNECT_IMAGE_TAG) \
+		-n $(NAMESPACE)
 	@echo "[INFO] Deploying Kafka Connect UI..."
 	cd $(ROOT_DIR) && helm upgrade --install dbrep-kafka-connect-ui deployment/kafka-connect-ui -f deployment/kafka-connect-ui/values.yaml -n $(NAMESPACE)
 	@echo "[INFO] Deploying Redpanda Console..."
@@ -378,7 +403,8 @@ else
 	-helm uninstall dbrep-oracle -n $(NAMESPACE)
 endif
 	-helm uninstall dbrep-mssql -n $(NAMESPACE)
-	-kubectl delete -f $(ROOT_DIR)/helm-chart/minio/minio-dev.yaml -n $(NAMESPACE)
+	-kubectl delete -f $(ROOT_DIR)/helm-chart/minio/minio-dev.yaml -n $(NAMESPACE) || true
+	kubectl apply -f $(ROOT_DIR)/helm-chart/minio/minio-dev.yaml -n $(NAMESPACE)
 	-helm uninstall dbrep-mariadb -n $(NAMESPACE)
 	-helm uninstall dbrep-redpanda-console -n $(NAMESPACE)
 	-helm uninstall dbrep-kafka-connect-ui -n $(NAMESPACE)
@@ -397,20 +423,20 @@ else
 	@echo "[INFO] Waiting for pods to be ready (this may take 5-10 minutes)..."
 endif
 	@echo "[INFO] Waiting for Kafka..."
-	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=kafka --timeout=300s -n $(NAMESPACE) || true
+	bash -c "kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=kafka --timeout=300s -n $(NAMESPACE) || true"
 	@echo "[INFO] Waiting for Kafka Connect..."
-	kubectl wait --for=condition=ready pod -l app=cp-kafka-connect --timeout=300s -n $(NAMESPACE) || true
+	bash -c "kubectl wait --for=condition=ready pod -l app=cp-kafka-connect --timeout=300s -n $(NAMESPACE) || true"
 	@echo "[INFO] Waiting for MariaDB..."
-	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=mariadb --timeout=300s -n $(NAMESPACE) || true
+	bash -c "kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=mariadb --timeout=300s -n $(NAMESPACE) || true"
 	@echo "[INFO] Waiting for Curl Client..."
-	kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=curl-client --timeout=60s -n $(NAMESPACE) || true
+	bash -c "kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=curl-client --timeout=60s -n $(NAMESPACE) || true"
 	@echo "[INFO] Waiting for Oracle..."
 ifeq ($(LIGHTWEIGHT),1)
-	kubectl wait --for=condition=ready pod -l app=oracle-db --timeout=300s -n $(NAMESPACE) || true
+	bash -c "kubectl wait --for=condition=ready pod -l app=oracle-db --timeout=300s -n $(NAMESPACE) || true"
 	@echo "[INFO] Extra wait for Oracle initialization..."
 	sleep 30
 else
-	kubectl wait --for=condition=ready pod -l app=oracle-db --timeout=600s -n $(NAMESPACE) || true
+	bash -c "kubectl wait --for=condition=ready pod -l app=oracle-db --timeout=600s -n $(NAMESPACE) || true"
 	@echo "[INFO] Extra wait for Oracle initialization..."
 	sleep 60
 endif
