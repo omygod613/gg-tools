@@ -1,0 +1,35 @@
+redpanda-console:
+  replicaCount: 1
+
+  image:
+    repository: redpandadata/console
+    tag: v2.7.2
+    pullPolicy: IfNotPresent
+
+  nameOverride: ""
+  fullnameOverride: ""
+
+  service:
+    type: ClusterIP
+    port: 8080
+
+  # Kafka configuration
+  kafka:
+    brokers:
+      - dbrep-kafka:9092
+
+  # Kafka Connect configuration
+  connect:
+    enabled: true
+    clusters:
+      - name: kafka-connect
+        url: http://dbrep-kafka-connect-cp-kafka-connect:8083
+
+  resources:
+    limits: {}
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
