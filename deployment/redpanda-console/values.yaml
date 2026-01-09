@@ -3,7 +3,7 @@ redpanda-console:
 
   image:
     repository: redpandadata/console
-    tag: v2.7.2
+    tag: v3.4.0
     pullPolicy: IfNotPresent
 
   nameOverride: ""
