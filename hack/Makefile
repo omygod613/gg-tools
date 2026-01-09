@@ -189,7 +189,7 @@ test-insert:
 	@echo "[INFO] Testing INSERT..."
 ifeq ($(LIGHTWEIGHT),1)
 	@POD=$$(kubectl get pods -n $(NAMESPACE) -l app=oracle-db -o jsonpath='{.items[0].metadata.name}') && \
-	echo "ALTER SESSION SET CONTAINER=$(ORACLE_PDB); INSERT INTO DEMO.SOURCE_ORDERS(ID, ORDER_NO, CUSTOMER_NAME, AMOUNT, STATUS) VALUES(5, 'ORD-005', 'Eve', 3100.00, 'PENDING'); COMMIT; EXIT;" | kubectl exec -i $$POD -n $(NAMESPACE) -- sqlplus -S sys/oracle@localhost:1521/$(ORACLE_SID) as sysdba
+	printf "INSERT INTO DEMO.SOURCE_ORDERS(ID, ORDER_NO, CUSTOMER_NAME, AMOUNT, STATUS) VALUES(5, 'ORD-005', 'Eve', 3100.00, 'PENDING');\nCOMMIT;\nEXIT;\n" | kubectl exec -i $$POD -n $(NAMESPACE) -- sqlplus -S sys/oracle@localhost:1521/$(ORACLE_PDB) as sysdba
 else
 	@echo "INSERT INTO DEMO.SOURCE_ORDERS(ID, ORDER_NO, CUSTOMER_NAME, AMOUNT, STATUS) VALUES(5, 'ORD-005', 'Eve', 3100.00, 'PENDING'); COMMIT; EXIT;" | kubectl exec -i $(ORACLE_POD) -n $(NAMESPACE) -- sqlplus -S sys/oracle@localhost:1521/$(ORACLE_PDB) as sysdba
 endif
@@ -200,7 +200,7 @@ test-update:
 	@echo "[INFO] Testing UPDATE..."
 ifeq ($(LIGHTWEIGHT),1)
 	@POD=$$(kubectl get pods -n $(NAMESPACE) -l app=oracle-db -o jsonpath='{.items[0].metadata.name}') && \
-	echo "ALTER SESSION SET CONTAINER=$(ORACLE_PDB); UPDATE DEMO.SOURCE_ORDERS SET STATUS='COMPLETED', MODIFIED_AT=CURRENT_TIMESTAMP WHERE ID=1; COMMIT; EXIT;" | kubectl exec -i $$POD -n $(NAMESPACE) -- sqlplus -S sys/oracle@localhost:1521/$(ORACLE_SID) as sysdba
+	printf "UPDATE DEMO.SOURCE_ORDERS SET STATUS='COMPLETED', MODIFIED_AT=CURRENT_TIMESTAMP WHERE ID=1;\nCOMMIT;\nEXIT;\n" | kubectl exec -i $$POD -n $(NAMESPACE) -- sqlplus -S sys/oracle@localhost:1521/$(ORACLE_PDB) as sysdba
 else
 	@echo "UPDATE DEMO.SOURCE_ORDERS SET STATUS='COMPLETED', MODIFIED_AT=CURRENT_TIMESTAMP WHERE ID=1; COMMIT; EXIT;" | kubectl exec -i $(ORACLE_POD) -n $(NAMESPACE) -- sqlplus -S sys/oracle@localhost:1521/$(ORACLE_PDB) as sysdba
 endif
@@ -211,7 +211,7 @@ test-delete:
 	@echo "[INFO] Testing DELETE..."
 ifeq ($(LIGHTWEIGHT),1)
 	@POD=$$(kubectl get pods -n $(NAMESPACE) -l app=oracle-db -o jsonpath='{.items[0].metadata.name}') && \
-	echo "ALTER SESSION SET CONTAINER=$(ORACLE_PDB); DELETE FROM DEMO.SOURCE_ORDERS WHERE ID=3; COMMIT; EXIT;" | kubectl exec -i $$POD -n $(NAMESPACE) -- sqlplus -S sys/oracle@localhost:1521/$(ORACLE_SID) as sysdba
+	printf "DELETE FROM DEMO.SOURCE_ORDERS WHERE ID=3;\nCOMMIT;\nEXIT;\n" | kubectl exec -i $$POD -n $(NAMESPACE) -- sqlplus -S sys/oracle@localhost:1521/$(ORACLE_PDB) as sysdba
 else
 	@echo "DELETE FROM DEMO.SOURCE_ORDERS WHERE ID=3; COMMIT; EXIT;" | kubectl exec -i $(ORACLE_POD) -n $(NAMESPACE) -- sqlplus -S sys/oracle@localhost:1521/$(ORACLE_PDB) as sysdba
 endif

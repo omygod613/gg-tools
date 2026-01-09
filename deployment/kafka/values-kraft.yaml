@@ -68,6 +68,17 @@ kafka:
     # Minimum node ID for controllers
     minId: 0
 
+    ## Override configuration for single-broker development setup
+    ## These settings are merged into the controller's server.properties
+    overrideConfiguration:
+      offsets.topic.replication.factor: "1"
+      offsets.topic.num.partitions: "1"
+      transaction.state.log.replication.factor: "1"
+      transaction.state.log.min.isr: "1"
+      default.replication.factor: "1"
+      min.insync.replicas: "1"
+      num.partitions: "1"
+
     ## Persistence configuration
     persistence:
       enabled: true
@@ -122,30 +133,5 @@ kafka:
   networkPolicy:
     enabled: false
 
-  ## Extra configuration for single-broker development setup
-  extraConfig: |-
-    offsets.topic.replication.factor=1
-    offsets.topic.num.partitions=1
-    transaction.state.log.replication.factor=1
-    transaction.state.log.min.isr=1
-    default.replication.factor=1
-    min.insync.replicas=1
-    num.partitions=1
-    log.cleanup.policy=compact
-
-  ## Extra environment variables for Kafka
-  extraEnvVars:
-    - name: KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR
-      value: "1"
-    - name: KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
-      value: "1"
-    - name: KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR
-      value: "1"
-    - name: KAFKA_CFG_DEFAULT_REPLICATION_FACTOR
-      value: "1"
-    - name: KAFKA_CFG_MIN_INSYNC_REPLICAS
-      value: "1"
-    - name: KAFKA_CFG_OFFSETS_TOPIC_NUM_PARTITIONS
-      value: "1"
-    - name: KAFKA_CFG_NUM_PARTITIONS
-      value: "1"
+  ## Log cleanup policy
+  logCleanupPolicy: compact
