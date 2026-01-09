@@ -12,6 +12,7 @@ Kafka-DBSync provides infrastructure and automation for building multi-database 
 - **Real-time Streaming**: Kafka 4.0 with KRaft mode (no ZooKeeper)
 - **Debezium Integration**: Log-based CDC connectors
 - **JDBC Sink Connectors**: Write to any JDBC-compatible database
+- **Web UIs**: Redpanda Console and Kafka Connect UI for monitoring
 - **E2E Testing**: Automated setup and verification scripts
 - **Kubernetes-Native**: Helm charts for all components
 - **Lightweight Mode**: Fast Oracle XE for development
@@ -102,6 +103,8 @@ kafka-dbsync/
 ├── deployment/          # Helm wrapper charts for deployment
 │   ├── kafka/          # Kafka cluster (Bitnami)
 │   ├── kafka-connect/  # Confluent Kafka Connect
+│   ├── kafka-connect-ui/  # Kafka Connect UI (Landoop)
+│   ├── redpanda-console/  # Redpanda Console (Kafka Web UI)
 │   ├── oracle/         # Oracle Database (XE/EE)
 │   ├── mariadb/        # MariaDB
 │   ├── mssql/          # Microsoft SQL Server
@@ -155,11 +158,33 @@ make reset              # Full reset (connectors + tables)
 ### Utilities
 
 ```bash
-make port-forward       # Forward Kafka Connect (8083) and UI (8000) ports
+make port-forward       # Forward Kafka Connect (8083) and Kafka Connect UI (8000)
 make status             # Check connector status
 make logs               # Tail Kafka Connect logs
 make topics             # List Kafka CDC topics
 make pods               # Show pod status
+```
+
+## Web UIs
+
+Two web interfaces are available for monitoring and managing Kafka:
+
+### Redpanda Console (Port 8080)
+
+Modern Kafka web UI for viewing topics, messages, consumer groups, and connectors.
+
+```bash
+kubectl port-forward svc/dbrep-redpanda-console 8080:8080 -n dev
+# Open http://localhost:8080
+```
+
+### Kafka Connect UI (Port 8000)
+
+Landoop UI for managing Kafka Connect connectors.
+
+```bash
+kubectl port-forward svc/dbrep-kafka-connect-ui 8000:8000 -n dev
+# Open http://localhost:8000
 ```
 
 ## Configuration Modes

@@ -2,7 +2,7 @@ apiVersion: v2
 name: redpanda-console
 description: Helm chart for Redpanda Console - Kafka Web UI
 version: 0.1.0
-appVersion: "2.7.2"
+appVersion: "3.4.0"
 keywords:
   - kafka
   - redpanda

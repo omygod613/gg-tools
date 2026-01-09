@@ -2,7 +2,7 @@
 # Usage: make e2e
 
 .PHONY: help e2e setup setup-oracle setup-mariadb port-forward register-source register-sink \
-        verify test-insert test-update test-delete clean status logs reset \
+        verify test-insert test-update test-delete clean status logs reset topics topic-purge \
         cluster cluster-delete deploy deploy-delete tools check-tools
 
 # Configuration
@@ -65,6 +65,7 @@ help:
 	@echo "  make status           Check connector status"
 	@echo "  make logs             Tail Kafka Connect logs"
 	@echo "  make topics           List Kafka CDC topics"
+	@echo "  make topic-purge      Purge records from topic (TOPIC=name)"
 	@echo "  make pods             Show pod status"
 
 # Full E2E test
@@ -230,7 +231,27 @@ logs:
 
 # List Kafka topics
 topics:
-	@kubectl exec dbrep-kafka-0 -- kafka-topics.sh --bootstrap-server localhost:9092 --list 2>/dev/null | grep -E "^cdc_oracle|^schema-changes" || echo "No CDC topics found"
+	@kubectl exec dbrep-kafka-controller-0 -n $(NAMESPACE) -- kafka-topics.sh --bootstrap-server localhost:9092 --list 2>/dev/null | grep -E "^cdc_oracle|^schema-changes" || echo "No CDC topics found"
+
+# Purge records from a topic (usage: make topic-purge TOPIC=cdc_oracle.DEMO.SOURCE_ORDERS)
+TOPIC ?= cdc_oracle.DEMO.SOURCE_ORDERS
+topic-purge:
+	@echo "[INFO] Purging records from topic: $(TOPIC)"
+	@echo "[INFO] Setting retention.ms=1000..."
+	@kubectl exec dbrep-kafka-controller-0 -n $(NAMESPACE) -- kafka-configs.sh \
+		--bootstrap-server localhost:9092 \
+		--alter --entity-type topics \
+		--entity-name $(TOPIC) \
+		--add-config retention.ms=1000
+	@echo "[INFO] Waiting 5s for log cleaner..."
+	@sleep 5
+	@echo "[INFO] Restoring default retention..."
+	@kubectl exec dbrep-kafka-controller-0 -n $(NAMESPACE) -- kafka-configs.sh \
+		--bootstrap-server localhost:9092 \
+		--alter --entity-type topics \
+		--entity-name $(TOPIC) \
+		--delete-config retention.ms
+	@echo "[OK] Topic $(TOPIC) purged"
 
 # Clean up connectors
 clean:

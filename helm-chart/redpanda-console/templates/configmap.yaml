@@ -14,7 +14,7 @@ data:
         - {{ . | quote }}
         {{- end }}
     {{- if .Values.connect.enabled }}
-    connect:
+    kafkaConnect:
       enabled: true
       clusters:
         {{- range .Values.connect.clusters }}
