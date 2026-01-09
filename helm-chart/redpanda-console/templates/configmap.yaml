@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "redpanda-console.fullname" . }}
+  labels:
+    app: {{ include "redpanda-console.name" . }}
+    chart: {{ include "redpanda-console.chart" . }}
+    release: {{ .Release.Name }}
+data:
+  config.yaml: |
+    kafka:
+      brokers:
+        {{- range .Values.kafka.brokers }}
+        - {{ . | quote }}
+        {{- end }}
+    {{- if .Values.connect.enabled }}
+    connect:
+      enabled: true
+      clusters:
+        {{- range .Values.connect.clusters }}
+        - name: {{ .name }}
+          url: {{ .url }}
+        {{- end }}
+    {{- end }}

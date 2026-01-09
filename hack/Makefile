@@ -98,6 +98,12 @@ ifeq ($(LIGHTWEIGHT),1)
 	echo "[INFO] Step 1: Enabling ARCHIVELOG mode..." && \
 	kubectl cp $(HACK_DIR)/sql/oracle-xe-archivelog.sql $$POD:/tmp/archivelog.sql -n $(NAMESPACE) && \
 	kubectl exec $$POD -n $(NAMESPACE) -- sqlplus -S / as sysdba @/tmp/archivelog.sql && \
+	echo "[INFO] Waiting for PDB to be fully open..." && \
+	for i in 1 2 3 4 5 6 7 8 9 10; do \
+		OPEN_MODE=$$(kubectl exec $$POD -n $(NAMESPACE) -- bash -c "echo 'SELECT open_mode FROM v\$$pdbs WHERE name='\''XEPDB1'\'';' | sqlplus -S sys/oracle@localhost:1521/$(ORACLE_SID) as sysdba" 2>/dev/null | grep -o 'READ WRITE' || true); \
+		if [ "$$OPEN_MODE" = "READ WRITE" ]; then echo "[INFO] PDB is open"; break; fi; \
+		echo "[INFO] Waiting for PDB... ($$i/10)"; sleep 3; \
+	done && \
 	echo "[INFO] Step 2: Creating CDC user in CDB..." && \
 	kubectl cp $(HACK_DIR)/sql/oracle-xe-cdc-user.sql $$POD:/tmp/cdc-user.sql -n $(NAMESPACE) && \
 	kubectl exec $$POD -n $(NAMESPACE) -- sqlplus -S sys/oracle@localhost:1521/$(ORACLE_SID) as sysdba @/tmp/cdc-user.sql && \
@@ -319,6 +325,9 @@ deploy: check-tools
 	cd $(ROOT_DIR) && helm upgrade --install dbrep-kafka-connect deployment/kafka-connect -f deployment/kafka-connect/values.yaml -n $(NAMESPACE)
 	@echo "[INFO] Deploying Kafka Connect UI..."
 	cd $(ROOT_DIR) && helm upgrade --install dbrep-kafka-connect-ui deployment/kafka-connect-ui -f deployment/kafka-connect-ui/values.yaml -n $(NAMESPACE)
+	@echo "[INFO] Deploying Redpanda Console..."
+	cd $(ROOT_DIR)/deployment/redpanda-console && helm dependency build
+	cd $(ROOT_DIR) && helm upgrade --install dbrep-redpanda-console deployment/redpanda-console -f deployment/redpanda-console/values.yaml -n $(NAMESPACE)
 	@echo "[INFO] Deploying MariaDB..."
 	cd $(ROOT_DIR) && helm upgrade --install dbrep-mariadb deployment/mariadb -f deployment/mariadb/values.yaml -n $(NAMESPACE)
 	@echo "[INFO] Deploying Minio..."
@@ -350,6 +359,7 @@ endif
 	-helm uninstall dbrep-mssql -n $(NAMESPACE)
 	-kubectl delete -f $(ROOT_DIR)/helm-chart/minio/minio-dev.yaml -n $(NAMESPACE)
 	-helm uninstall dbrep-mariadb -n $(NAMESPACE)
+	-helm uninstall dbrep-redpanda-console -n $(NAMESPACE)
 	-helm uninstall dbrep-kafka-connect-ui -n $(NAMESPACE)
 	-helm uninstall dbrep-kafka-connect -n $(NAMESPACE)
 	-helm uninstall dbrep-kafka -n $(NAMESPACE)
